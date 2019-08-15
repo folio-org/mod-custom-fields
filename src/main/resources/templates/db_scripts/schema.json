@@ -1,0 +1,11 @@
+{
+  "tables": [
+    {
+      "tableName": "custom_fields",
+      "withMetadata": true,
+      "pkColumnName": "id",
+      "generateId": false,
+      "withAuditing": false
+    }
+  ]
+}

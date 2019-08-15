@@ -1,0 +1,52 @@
+{
+  "id": "${artifactId}-${version}",
+  "name": "custom-fields",
+  "requires": [],
+  "provides": [
+    {
+      "id": "custom-fields",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": ["GET"],
+          "pathPattern": "/custom-fields",
+          "permissionsRequired": ["custom.fields.collection.get"]
+        }
+      ]
+    },
+    {
+      "id": "_tenant",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": ["POST", "DELETE"],
+          "pathPattern": "/_/tenant"
+        }
+      ]
+    }
+  ],
+  "permissionSets": [
+    {
+      "permissionName": "custom.fields.collection.get",
+      "displayName": "Custom Fields - get collection",
+      "description": "Get Custom Fields collection"
+    },
+    {
+      "permissionName": "custom.fields.all",
+      "displayName": "Custom Fields module - all permissions",
+      "description": "Entire set of permissions needed to use the custom fields module",
+      "subPermissions": [
+        "custom.fields.collection.get"
+      ],
+      "visible": false
+    }
+  ],
+  "launchDescriptor": {
+    "dockerImage": "${artifactId}:${version}",
+    "dockerArgs": {
+      "HostConfig": { "PortBindings": { "8081/tcp":  [{ "HostPort": "%p" }] } }
+    },
+    "dockerPull" : false
+  }
+}

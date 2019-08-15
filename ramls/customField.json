@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "Collection of custom fields",
+  "javaType": "org.folio.rest.jaxrs.model.CustomField",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "An internal id of the custom field",
+      "example": "packages"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the custom field",
+      "example": "Department"
+    },
+    "refId": {
+      "type": "string",
+      "description": "The reference id of the custom field",
+      "example": "packages"
+    },
+    "visible": {
+      "type": "boolean",
+      "description": "Defines visibility of the custom field",
+      "example": true
+    },
+    "required": {
+      "type": "boolean",
+      "description": "Defines if the custom field is required",
+      "example": true
+    },
+    "helpText": {
+      "type": "string",
+      "description": "The description of the custom field",
+      "example": "Provide a department"
+    }
+  }
+}
