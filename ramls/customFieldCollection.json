@@ -7,12 +7,14 @@
   "properties": {
     "customFields": {
       "type": "array",
+      "description": "An array of custom fields",
       "items": {
         "type": "object",
         "$ref": "customField.json"
       }
     },
     "totalRecords": {
+      "description": "Total number of records available, that match search conditions",
       "type": "integer"
     }
   },
