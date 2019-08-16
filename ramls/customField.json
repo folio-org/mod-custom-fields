@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "description": "Collection of custom fields",
-  "javaType": "org.folio.rest.jaxrs.model.CustomField",
   "additionalProperties": false,
   "properties": {
     "name": {
