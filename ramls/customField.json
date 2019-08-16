@@ -5,11 +5,6 @@
   "javaType": "org.folio.rest.jaxrs.model.CustomField",
   "additionalProperties": false,
   "properties": {
-    "id": {
-      "type": "string",
-      "description": "An internal id of the custom field",
-      "example": "packages"
-    },
     "name": {
       "type": "string",
       "description": "The name of the custom field",
@@ -18,7 +13,7 @@
     "refId": {
       "type": "string",
       "description": "The reference id of the custom field",
-      "example": "packages"
+      "example": "department"
     },
     "visible": {
       "type": "boolean",

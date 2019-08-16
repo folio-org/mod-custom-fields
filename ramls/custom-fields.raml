@@ -10,30 +10,42 @@ documentation:
     content: This documents the API calls that can be made to manage custom fields
 
 types:
-  customFieldsCollection: !include customFieldsCollection.json
+  customFieldCollection: !include customFieldCollection.json
+  customField: !include customField.json
   errors: !include raml-util/schemas/errors.schema
 
 traits:
   pageable:  !include raml-util/traits/pageable.raml
   searchable: !include raml-util/traits/searchable.raml
+  validate: !include raml-util/traits/validation.raml
+  language: !include raml-util/traits/language.raml
+
+resourceTypes:
+  collection: !include raml-util/rtypes/collection.raml
+  collection-item: !include raml-util/rtypes/item-collection.raml
+
 
 /custom-fields:
   displayName: Custom Fields
+  type:
+    collection:
+      schemaCollection: customFieldCollection
+      schemaItem: customField
+      exampleCollection: !include examples/customFieldCollection.sample
+      exampleItem: !include examples/customField.sample
+  post:
+    is: [ validate ]
   get:
-    description: Retrieve a collection of custom fields based on the search query.
     is: [
-      searchable: {description: "with valid searchable fields: for example genus=felis", example: "genus=felis"},
-      pageable]
-    responses:
-      200:
-        description: OK
-        body:
-          application/json:
-            description: |
-              An array of custom fields comprising the results of the query.
-            type: customFieldsCollection
-      400:
-        description: Bad Request
-        body:
-          application/json:
-            type: errors
+      searchable: {description: "Query should contain custom field attributes",
+       example: "name=department"},
+      pageable,
+      validate
+    ]
+  /{id}:
+    displayName: Custom Fields
+    description: Get, Delete or Update a custom field
+    type:
+      collection-item:
+        schema: customField
+        exampleItem: !include examples/customField.sample
