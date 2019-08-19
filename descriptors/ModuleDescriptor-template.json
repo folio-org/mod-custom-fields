@@ -11,6 +11,26 @@
           "methods": ["GET"],
           "pathPattern": "/custom-fields",
           "permissionsRequired": ["custom.fields.collection.get"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/custom-fields",
+          "permissionsRequired": ["custom.fields.item.post"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/custom-fields/{id}",
+          "permissionsRequired": ["custom.fields.item.get"]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/custom-fields/{id}",
+          "permissionsRequired": ["custom.fields.item.put"]
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/custom-fields/{id}",
+          "permissionsRequired": ["custom.fields.item.delete"]
         }
       ]
     },
@@ -33,11 +53,35 @@
       "description": "Get Custom Fields collection"
     },
     {
+      "permissionName": "custom.fields.item.post",
+      "displayName": "Custom Fields - create field",
+      "description": "Create Custom Field"
+    },
+    {
+      "permissionName": "custom.fields.item.get",
+      "displayName": "Custom Fields - get field",
+      "description": "Get Custom Field"
+    },
+    {
+      "permissionName": "custom.fields.item.put",
+      "displayName": "Custom Fields - modify field",
+      "description": "Modify Custom Field"
+    },
+    {
+      "permissionName": "custom.fields.item.delete",
+      "displayName": "Custom Fields - delete field",
+      "description": "Delete Custom Field"
+    },
+    {
       "permissionName": "custom.fields.all",
       "displayName": "Custom Fields module - all permissions",
       "description": "Entire set of permissions needed to use the custom fields module",
       "subPermissions": [
-        "custom.fields.collection.get"
+        "custom.fields.collection.get",
+        "custom.fields.item.post",
+        "custom.fields.item.get",
+        "custom.fields.item.put",
+        "custom.fields.item.delete"
       ],
       "visible": false
     }

@@ -1,0 +1,7 @@
+{
+  "name": "Department",
+  "refId": "department",
+  "visible": true,
+  "required": true,
+  "helpText": "Provide a department"
+}

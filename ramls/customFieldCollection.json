@@ -2,17 +2,18 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "description": "Collection of custom fields",
-  "javaType": "org.folio.rest.jaxrs.model.CustomFieldsCollection",
   "additionalProperties": false,
   "properties": {
     "customFields": {
       "type": "array",
+      "description": "An array of custom fields",
       "items": {
         "type": "object",
         "$ref": "customField.json"
       }
     },
     "totalRecords": {
+      "description": "Total number of records available, that match search conditions",
       "type": "integer"
     }
   },
