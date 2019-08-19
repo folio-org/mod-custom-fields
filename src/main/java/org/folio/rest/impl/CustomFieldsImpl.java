@@ -9,12 +9,16 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.folio.rest.annotations.Validate;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -46,10 +50,12 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
+  @Validate
   public void getCustomFields(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(GetCustomFieldsResponse.status(Response.Status.NOT_IMPLEMENTED)
-        .build()));
+
+    Future<CustomFieldCollection> found = customFieldsService.findByQuery(query, offset, limit, lang, tenantId(okapiHeaders));
+    respond(found, GetCustomFieldsResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
   }
 
   @Override
@@ -62,14 +68,15 @@ public class CustomFieldsImpl implements CustomFields {
   @Override
   public void deleteCustomFieldsById(String id, String lang, Map<String, String> okapiHeaders,
                                      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(GetCustomFieldsResponse.status(Response.Status.NOT_IMPLEMENTED)
+
+    asyncResultHandler.handle(succeededFuture(DeleteCustomFieldsByIdResponse.status(Status.NOT_IMPLEMENTED)
         .build()));
   }
 
   @Override
   public void putCustomFieldsById(String id, String lang, CustomField entity, Map<String, String> okapiHeaders,
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(GetCustomFieldsResponse.status(Response.Status.NOT_IMPLEMENTED)
+    asyncResultHandler.handle(succeededFuture(PutCustomFieldsByIdResponse.status(Status.NOT_IMPLEMENTED)
         .build()));
   }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import io.vertx.core.Future;
 
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
 
 public interface CustomFieldsRepository {
 
@@ -24,4 +25,8 @@ public interface CustomFieldsRepository {
    * Returns count of custom fields with given customFieldId.
    */
   Future<Integer> countById(String customFieldId, String tenantId);
+  /**
+   * Returns custom fields that match specified CQL query
+   */
+  Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String tenantId);
 }

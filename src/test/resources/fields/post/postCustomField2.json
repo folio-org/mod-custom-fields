@@ -1,0 +1,8 @@
+{
+  "name": "Expiration Date",
+  "id": "expiration-date",
+  "type" : "TEXTBOX_SHORT",
+  "visible": true,
+  "required": true,
+  "helpText": "Set expiration date"
+}

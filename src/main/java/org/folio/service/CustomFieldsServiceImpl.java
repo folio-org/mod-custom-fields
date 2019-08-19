@@ -3,6 +3,8 @@ package org.folio.service;
 import java.text.Normalizer;
 
 import io.vertx.core.Future;
+
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +35,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .map(customField -> customField.orElseThrow(() -> ServiceExceptions.notFound(CustomField.class, id)));
   }
 
+  @Override
+  public Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String lang, String tenantId) {
+    return repository.findByQuery(query, offset, limit, tenantId);
+  }
+
   private String unAccentName(String customFieldName) {
     return Normalizer.normalize(customFieldName, Normalizer.Form.NFD)
       .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
@@ -44,8 +51,4 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     id = id.length() >= 65 ? id.substring(0, 65) : id;
     return id + "_" + (count + 1);
   }
-
-
-
-
 }
