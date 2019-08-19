@@ -1,0 +1,7 @@
+{
+  "name": "Tĥïŝ ĩš â ťŕĭçķŷ Šťŕĭńġ",
+  "visible": true,
+  "required": true,
+  "type": "SINGLE_CHECKBOX",
+  "helpText": "Provide a department"
+}

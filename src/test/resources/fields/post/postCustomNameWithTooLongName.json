@@ -1,0 +1,7 @@
+{
+  "name": "çÇáéíóúýÁÉÍÓÚÝàèìòùÀÈÌÒÙãõñäëïöüÿÄËÏÖÜÃÕÑâêîôûÂÊÎÔÛÈ,É,Ê,Ë,Û,Ù,Ï,Î,À,Â,Ô,è,é,ê,ë,û,ù,ï,î,à,â,ô,Ç,ç,Ã,ã,Õ,õ",
+  "visible": true,
+  "required": true,
+  "type": "RADIO_BUTTON",
+  "helpText": "Provide a department"
+}

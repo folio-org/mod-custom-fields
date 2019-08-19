@@ -1,0 +1,8 @@
+{
+  "name": "Department",
+  "id": "department",
+  "type" : "SINGLE_CHECKBOX",
+  "visible": true,
+  "required": true,
+  "helpText": "Provide a department"
+}
