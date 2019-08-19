@@ -11,15 +11,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
-
-import org.folio.db.CqlQuery;
-import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.rest.persist.interfaces.Results;
+import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.CqlQuery;
+import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.persist.interfaces.Results;
 
 @Component
 public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
@@ -28,6 +29,8 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
 
   @Autowired
   private Vertx vertx;
+  @Autowired
+  private DBExceptionTranslator excTranslator;
 
   /**
    * Saves a custom field to the database
@@ -36,12 +39,13 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    * @param tenantId - tenant id
    */
   @Override
-  public Future<Optional<CustomField>> save(CustomField customField, String tenantId) {
+  public Future<CustomField> save(CustomField customField, String tenantId) {
     Future<String> future = Future.future();
     logger.debug("Saving a custom field with id: {}.", customField.getId());
     PostgresClient.getInstance(vertx, tenantId)
       .save(CUSTOM_FIELDS_TABLE,  customField.getId(), customField, future);
-    return future.compose(customFieldId -> findById(customFieldId, tenantId));
+
+    return future.map(customField).recover(excTranslator.translateOrPassBy());
   }
 
   /**
@@ -80,6 +84,16 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
     CqlQuery<CustomField> q = new CqlQuery<>(PostgresClient.getInstance(vertx, tenantId), CUSTOM_FIELDS_TABLE, CustomField.class);
 
     return q.get(query, offset, limit).map(this::toCustomFieldCollection);
+  }
+
+  @Override
+  public Future<Boolean> update(CustomField entity, String tenantId) {
+    Future<UpdateResult> future = Future.future();
+
+    PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), future);
+
+    return future.map(updateResult -> updateResult.getUpdated() == 1)
+      .recover(excTranslator.translateOrPassBy());
   }
 
   private Integer mapCount(ResultSet resultSet) {

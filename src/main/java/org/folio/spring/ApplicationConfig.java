@@ -10,6 +10,9 @@ import static org.folio.rest.exc.RestExceptionHandlers.logged;
 
 import javax.ws.rs.core.Response;
 
+import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -30,5 +33,11 @@ public class ApplicationConfig {
       .orElse(baseUnprocessableHandler())
       .orElse(generalHandler())
       .compose(completionCause()));
+  }
+
+  @Bean
+  public DBExceptionTranslator excTranslator(@Value("${db.exception.translator.name:postgresql}") String translatorName) {
+    DBExceptionTranslatorFactory factory = DBExceptionTranslatorFactory.instance();
+    return factory.create(translatorName);
   }
 }
