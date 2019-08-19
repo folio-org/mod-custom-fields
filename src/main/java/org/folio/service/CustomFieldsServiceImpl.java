@@ -28,9 +28,9 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     final String unAccentName = unAccentName(customField.getName());
 
     return populateCreator(customField, params)
-      .compose(o -> repository.countById(unAccentName, params.getTenant()))
-      .compose(count -> {
-        customField.setId(getCustomFieldId(unAccentName, count));
+      .compose(o -> repository.maxRefId(unAccentName, params.getTenant()))
+      .compose(maxCount -> {
+        customField.setRefId(getCustomFieldId(unAccentName, maxCount));
         return repository.save(customField, params.getTenant());
       });
   }
@@ -38,9 +38,14 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   @Override
   public Future<Void> update(String id, CustomField customField, OkapiParams params) {
     customField.setId(id);
+    final String unAccentName = unAccentName(customField.getName());
     return populateUpdater(customField, params)
-      .compose(o -> repository.update(customField, params.getTenant()))
-      .compose(found -> found ? succeededFuture() : failedFuture(ServiceExceptions.notFound(CustomField.class, id)));
+      .compose(o -> repository.maxRefId(unAccentName, params.getTenant()))
+      .compose(maxCount -> {
+        customField.setRefId(getCustomFieldId(unAccentName, maxCount));
+      return repository.update(customField, params.getTenant());
+      })
+      .compose(found -> failIfNotFound(found, id));
   }
 
   @Override
@@ -52,6 +57,16 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   @Override
   public Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String lang, String tenantId) {
     return repository.findByQuery(query, offset, limit, tenantId);
+  }
+
+  @Override
+  public Future<Void> delete(String id, String tenantId) {
+    return repository.delete(id, tenantId)
+      .compose(deleted -> failIfNotFound(deleted, id));
+  }
+
+  private Future<Void> failIfNotFound(boolean found, String entityId) {
+    return found ? succeededFuture() : failedFuture(ServiceExceptions.notFound(CustomField.class, entityId));
   }
 
   private Future<Void> populateCreator(CustomField entity, OkapiParams params) {
@@ -79,8 +94,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .replaceAll("\\s+", "-").toLowerCase();
   }
 
-  private String getCustomFieldId(String id, Integer count) {
-    id = id.length() >= 65 ? id.substring(0, 65) : id;
-    return id + "_" + (count + 1);
+  private String getCustomFieldId(String id, Integer maxCount) {
+    return id + "_" + (maxCount + 1);
   }
 }

@@ -1,7 +1,6 @@
 {
   "name": "Expiration Date",
-  "type" : "TEXTBOX_SHORT",
-  "refId": "not-null-ref-id",
+  "type" : "SINGLE_CHECKBOX",
   "visible": true,
   "required": true,
   "helpText": "Set expiration date"

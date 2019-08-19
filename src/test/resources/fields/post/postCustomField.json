@@ -1,7 +1,7 @@
 {
   "name": "Department",
-  "id": "department_1",
   "type" : "SINGLE_CHECKBOX",
+  "refId": "not-null-ref-id",
   "visible": true,
   "required": true,
   "helpText": "Provide a department"

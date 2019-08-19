@@ -29,4 +29,9 @@ public interface CustomFieldsService {
   Future<CustomField> findById(String id, String tenantId);
 
   Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String lang, String tenantId);
+
+  /**
+   * Deletes custom field with given id.
+   */
+  Future<Void> delete(String id, String tenantId);
 }

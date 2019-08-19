@@ -6,13 +6,19 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "The id of the custom field",
-      "example": "department_1"
+      "description": "Unique generated identifier for the custom field",
+      "example": "62d00c36-a94f-434d-9cd2-c7ea159303da"
     },
     "name": {
       "type": "string",
       "description": "The name of the custom field",
-      "example": "Department"
+      "example": "Department",
+      "maxLength": 65
+    },
+    "refId": {
+      "type": "string",
+      "description": "The reference id of the custom field",
+      "example": "department_1"
     },
     "type": {
       "type": "string",
