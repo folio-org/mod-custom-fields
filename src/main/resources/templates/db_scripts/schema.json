@@ -1,11 +1,9 @@
 {
-  "tables": [
+  "scripts": [
     {
-      "tableName": "custom_fields",
-      "withMetadata": true,
-      "pkColumnName": "id",
-      "generateId": false,
-      "withAuditing": false
+      "run": "after",
+      "snippet": "CREATE TABLE IF NOT EXISTS custom_fields(refId VARCHAR(50) PRIMARY KEY , jsonb JSONB NOT NULL);",
+      "fromModuleVersion": "1.0"
     }
   ]
 }
