@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "Custom Field Options Schema",
+  "additionalProperties": false,
+  "properties": {
+    "values": {
+      "type": "array",
+      "description": "Defines the possible values for the custom field",
+      "items": {
+        "type": "string"
+      },
+      "example": "[\"Engineering\", \"Design\"]"
+    },
+    "sortingOrder": {
+      "type": "string",
+      "enum": ["ASC", "DESC", "CUSTOM"],
+      "description": "Defines sorting order for the custom field",
+      "example": "ASC"
+    },
+    "sorted": {
+      "type": "array",
+      "description": "Defines sorted array of the custom field",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

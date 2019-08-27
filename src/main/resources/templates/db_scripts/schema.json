@@ -2,7 +2,7 @@
   "scripts": [
     {
       "run": "after",
-      "snippet": "CREATE TABLE IF NOT EXISTS custom_fields(refId VARCHAR(50) PRIMARY KEY , jsonb JSONB NOT NULL);",
+      "snippet": "CREATE TABLE IF NOT EXISTS custom_fields(id VARCHAR(75) PRIMARY KEY , jsonb JSONB NOT NULL);",
       "fromModuleVersion": "1.0"
     }
   ]

@@ -15,7 +15,7 @@
   </licenses>
 
   <properties>
-    <raml-module-builder.version>24.0.0</raml-module-builder.version>
+    <raml-module-builder.version>25.0.1</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
     <junit.version>4.12</junit.version>
     <rest-assured.version>3.3.0</rest-assured.version>
@@ -41,6 +41,16 @@
       <version>${vertx.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-di-support</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-service-tools-dev</artifactId>
+      <version>${folio-service-tools.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
       <version>${vertx.version}</version>
@@ -57,11 +67,6 @@
       <artifactId>rest-assured</artifactId>
       <version>${rest-assured.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-service-tools-dev</artifactId>
-      <version>${folio-service-tools.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -97,6 +102,11 @@
         <version>2.22.1</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
+          <systemPropertyVariables>
+            <vertx.logger-delegate-factory-class-name>
+              io.vertx.core.logging.Log4j2LogDelegateFactory
+            </vertx.logger-delegate-factory-class-name>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
 

@@ -4,15 +4,21 @@
   "description": "Collection of custom fields",
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "description": "The id of the custom field",
+      "example": "department_1"
+    },
     "name": {
       "type": "string",
       "description": "The name of the custom field",
       "example": "Department"
     },
-    "refId": {
+    "type": {
       "type": "string",
-      "description": "The reference id of the custom field",
-      "example": "department"
+      "description": "The type of the custom field",
+      "$ref": "customFieldTypes.json",
+      "example": "RADIO_BUTTON"
     },
     "visible": {
       "type": "boolean",
@@ -28,6 +34,40 @@
       "type": "string",
       "description": "The description of the custom field",
       "example": "Provide a department"
+    },
+    "maxSize": {
+      "type": "integer",
+      "description": "The text field maximum length",
+      "example": 42
+    },
+    "default": {
+      "type": "boolean",
+      "description": "Defines if the custom field is default",
+      "example": false
+    },
+    "defaults": {
+      "type": "array",
+      "description": "Defines the custom field default value(s)",
+      "example": "ABC"
+    },
+    "multiSelect": {
+      "type": "boolean",
+      "description": "Defines if the custom field is a multi select",
+      "example": false
+    },
+    "options": {
+      "type": "object",
+      "description": "Defines the options for the custom field",
+      "$ref": "customFieldOptions.json"
+    },
+    "metadata": {
+      "description": "User metadata information",
+      "$ref": "raml-util/schemas/metadata.schema",
+      "readonly": true
     }
-  }
+  },
+  "required": [
+    "name",
+    "type"
+  ]
 }
