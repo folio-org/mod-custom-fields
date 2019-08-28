@@ -1,9 +1,8 @@
 package org.folio.rest.impl;
 
-
 import static org.folio.repository.CustomFieldsConstants.CUSTOM_FIELDS_TABLE;
 import static org.folio.repository.CustomFieldsConstants.JSONB_COLUMN;
-import static org.folio.rest.impl.TestBase.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
 import java.util.List;

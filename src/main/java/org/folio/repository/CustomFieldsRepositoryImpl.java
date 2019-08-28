@@ -11,6 +11,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
+
+import org.folio.db.CqlQuery;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.persist.interfaces.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +75,13 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
     return future.map(this::mapCount);
   }
 
+  @Override
+  public Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String tenantId) {
+    CqlQuery<CustomField> q = new CqlQuery<>(PostgresClient.getInstance(vertx, tenantId), CUSTOM_FIELDS_TABLE, CustomField.class);
+
+    return q.get(query, offset, limit).map(this::toCustomFieldCollection);
+  }
+
   private Integer mapCount(ResultSet resultSet) {
     return resultSet.getRows().get(0).getInteger("count");
   }
@@ -79,4 +90,9 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
     return PostgresClient.convertToPsqlStandard(tenantId) + "." + CUSTOM_FIELDS_TABLE;
   }
 
+  private CustomFieldCollection toCustomFieldCollection(Results<CustomField> results) {
+    return new CustomFieldCollection()
+      .withCustomFields(results.getResults())
+      .withTotalRecords(results.getResultInfo().getTotalRecords());
+  }
 }
