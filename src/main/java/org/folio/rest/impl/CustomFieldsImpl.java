@@ -1,7 +1,5 @@
 package org.folio.rest.impl;
 
-import static io.vertx.core.Future.succeededFuture;
-
 import static org.folio.rest.ResponseHelper.respond;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.headersFor201;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
@@ -9,7 +7,6 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -72,8 +69,8 @@ public class CustomFieldsImpl implements CustomFields {
   public void deleteCustomFieldsById(String id, String lang, Map<String, String> okapiHeaders,
                                      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    asyncResultHandler.handle(succeededFuture(DeleteCustomFieldsByIdResponse.status(Status.NOT_IMPLEMENTED)
-        .build()));
+    Future<Void> deleted = customFieldsService.delete(id, tenantId(okapiHeaders));
+    respond(deleted, v -> DeleteCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }
 
   @Override

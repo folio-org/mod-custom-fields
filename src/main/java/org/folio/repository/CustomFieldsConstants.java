@@ -6,5 +6,6 @@ public class CustomFieldsConstants {
   public static final String JSONB_COLUMN = "jsonb";
   public static final String ID_COLUMN = "id";
 
-  static final String COUNT_CUSTOM_FIELDS_BY_ID = "SELECT COUNT(*) as count from %s WHERE " + ID_COLUMN + " LIKE ?";
+  public static final String REF_ID_REGEX = "(%s_[1-9]{1,})";
+  static final String SELECT_REF_IDS = "SELECT unnest(regexp_matches(" + JSONB_COLUMN + " ->> 'refId', ?)) as values FROM %s";
 }

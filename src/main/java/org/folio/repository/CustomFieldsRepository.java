@@ -22,13 +22,19 @@ public interface CustomFieldsRepository {
   Future<Optional<CustomField>> findById(String id, String tenantId);
 
   /**
-   * Returns count of custom fields with given customFieldId.
+   * Returns a max count of custom fields by given customFieldName.
    */
-  Future<Integer> countById(String customFieldId, String tenantId);
+  Future<Integer> maxRefId(String customFieldName, String tenantId);
+
   /**
    * Returns custom fields that match specified CQL query
    */
   Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String tenantId);
 
   Future<Boolean> update(CustomField entity, String tenantId);
+
+  /**
+   * Deletes custom field with given id.
+   */
+  Future<Boolean> delete(String id, String tenantId);
 }
