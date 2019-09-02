@@ -1,6 +1,6 @@
 {
   "name": "Expiration Date",
-  "id": "expiration-date",
+  "id": "expiration-date_1",
   "type" : "TEXTBOX_SHORT",
   "visible": true,
   "required": true,

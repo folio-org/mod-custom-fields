@@ -13,7 +13,7 @@ public interface CustomFieldsRepository {
    * Saves the definition of the custom field.
    * Returns newly created custom field.
    */
-  Future<Optional<CustomField>> save(CustomField customField, String tenantId);
+  Future<CustomField> save(CustomField customField, String tenantId);
 
   /**
    * Returns custom field with given id.
@@ -29,4 +29,6 @@ public interface CustomFieldsRepository {
    * Returns custom fields that match specified CQL query
    */
   Future<CustomFieldCollection> findByQuery(String query, int offset, int limit, String tenantId);
+
+  Future<Boolean> update(CustomField entity, String tenantId);
 }

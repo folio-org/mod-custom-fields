@@ -2,6 +2,7 @@ package org.folio.service;
 
 import io.vertx.core.Future;
 
+import org.folio.common.OkapiParams;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 
@@ -11,7 +12,15 @@ public interface CustomFieldsService {
    * Saves the definition of the custom field.
    * Returns newly created custom field.
    */
-  Future<CustomField> save(CustomField customField, String tenantId);
+  Future<CustomField> save(CustomField customField, OkapiParams params);
+
+  /**
+   * Updates the definition of the custom field with specified id
+   * @param id id of field to update
+   * @param customField new value
+   * @param params OkapiParams with tenantId
+   */
+  Future<Void> update(String id, CustomField customField, OkapiParams params);
 
   /**
    * Returns custom field with given id.

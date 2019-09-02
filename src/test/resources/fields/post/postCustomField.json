@@ -1,6 +1,6 @@
 {
   "name": "Department",
-  "id": "department",
+  "id": "department_1",
   "type" : "SINGLE_CHECKBOX",
   "visible": true,
   "required": true,
