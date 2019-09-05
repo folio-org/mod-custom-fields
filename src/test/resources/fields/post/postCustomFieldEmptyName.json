@@ -2,5 +2,6 @@
   "visible": true,
   "required": true,
   "type": "SINGLE_CHECKBOX",
+  "entityType": "user",
   "helpText": "Provide a department"
 }

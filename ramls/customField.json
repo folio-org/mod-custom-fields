@@ -26,6 +26,11 @@
       "$ref": "customFieldTypes.json",
       "example": "RADIO_BUTTON"
     },
+    "entityType": {
+      "type": "string",
+      "description": "The entity type, the custom field is assigned to",
+      "example": "package"
+    },
     "visible": {
       "type": "boolean",
       "description": "Defines visibility of the custom field",
@@ -64,6 +69,7 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "entityType"
   ]
 }

@@ -1,5 +1,4 @@
 {
-  "name": "Department 2",
   "type" : "RADIO_BUTTON",
   "visible": false,
   "required": false,
