@@ -5,14 +5,18 @@
       "refId": "department",
       "visible": true,
       "required": true,
-      "helpText": "Provide a department"
+      "helpText": "Provide a department",
+      "entityType": "package",
+      "type": "SINGLE_SELECT_DROPDOWN"
     },
     {
       "name": "Phone",
       "refId": "phone",
       "visible": true,
       "required": false,
-      "helpText": "Phone number"
+      "helpText": "Phone number",
+      "entityType": "user",
+      "type": "TEXTBOX_SHORT"
     }
   ]
 }
