@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -122,21 +123,26 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldNotCreateCustomFieldWhenNameIsTooLong() throws IOException, URISyntaxException {
+  public void shouldNotCreateCustomFieldWhenNameIsTooLongOnPost() throws IOException, URISyntaxException {
     final String cfWithHalfName = readFile("fields/post/postCustomNameWithTooLongName.json");
-//    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_CREATED, USER8);
     postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY, USER8);
   }
 
   @Test
-  public void shouldReturn422WhenNameIsEmpty() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenNameIsEmptyOnPost() throws IOException, URISyntaxException {
     final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyName.json");
     postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY, USER8);
   }
 
   @Test
-  public void shouldReturn422WhenTypeIsEmpty() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenTypeIsEmptyOnPost() throws IOException, URISyntaxException {
     final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyType.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturn422WhenEntityTypeIsEmptyOnPost() throws IOException, URISyntaxException {
+    final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyEntityType.json");
     postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
   }
 
@@ -167,14 +173,17 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals(2, fields.getCustomFields().size());
     assertThat(fields.getCustomFields(), hasItem(allOf(
       hasProperty("name", is("Department")),
-      hasProperty("helpText", is("Provide a department"))
+      hasProperty("helpText", is("Provide a department")),
+      hasProperty("entityType", is("user"))
     )));
     assertThat(fields.getCustomFields(), hasItem(allOf(
       hasProperty("name", is("Expiration Date")),
-      hasProperty("helpText", is("Set expiration date"))
+      hasProperty("helpText", is("Set expiration date")),
+      hasProperty("entityType", is("package"))
     )));
   }
 
+  @Test
   public void shouldReturnFieldsByName() throws IOException, URISyntaxException {
     createFields();
     CustomFieldCollection fields =
@@ -184,6 +193,19 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals(1, (int) fields.getTotalRecords());
     assertEquals("Department", fields.getCustomFields().get(0).getName());
     assertEquals("Provide a department", fields.getCustomFields().get(0).getHelpText());
+    assertEquals("user", fields.getCustomFields().get(0).getEntityType());
+  }
+
+  @Test
+  public void shouldReturnFieldsByEntityType() throws IOException, URISyntaxException {
+    createFields();
+    CustomFieldCollection fields =
+      getWithOk(CUSTOM_FIELDS_PATH + "?query=entityType==package")
+        .as(CustomFieldCollection.class);
+    assertEquals(1, fields.getCustomFields().size());
+    assertEquals(1, (int) fields.getTotalRecords());
+    assertEquals("Expiration Date", fields.getCustomFields().get(0).getName());
+    assertEquals("Set expiration date", fields.getCustomFields().get(0).getHelpText());
   }
 
   @Test
@@ -229,6 +251,7 @@ public class CustomFieldsImplTest extends TestBase {
     getWithStatus(CUSTOM_FIELDS_ID_PATH, SC_NOT_FOUND);
   }
 
+  @Test
   public void getCustomFieldsById() throws IOException, URISyntaxException {
     final String postField = readFile("fields/post/postCustomField.json");
 
@@ -237,7 +260,7 @@ public class CustomFieldsImplTest extends TestBase {
     CustomField field = getWithOk(CUSTOM_FIELDS_ID_PATH).as(CustomField.class);
 
     assertEquals("Department", field.getName());
-    assertEquals("department", field.getId());
+    assertNotNull(field.getRefId());
     assertEquals("Provide a department", field.getHelpText());
     assertEquals(true, field.getRequired());
     assertEquals(true, field.getVisible());
@@ -269,6 +292,7 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals("mockuser9", noteTypeMetadata.getUpdatedByUsername());
   }
 
+  @Test
   public void shouldNotChangeRefIdWhenNameIsSameOnPut() throws IOException, URISyntaxException {
     final CustomField customField =
       postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
@@ -290,6 +314,36 @@ public class CustomFieldsImplTest extends TestBase {
 
     assertEquals(USER9.getValue(), noteTypeMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", noteTypeMetadata.getUpdatedByUsername());
+  }
+
+  @Test
+  public void shouldReturn422WhenNameIsEmptyOnPut() throws IOException, URISyntaxException {
+    final CustomField customField =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
+
+    final String cfWithHalfName = readFile("fields/put/putCustomFieldEmptyName.json");
+    putWithStatus(CUSTOM_FIELDS_PATH + "/" + customField.getId(), cfWithHalfName, SC_UNPROCESSABLE_ENTITY, USER8);
+  }
+
+  @Test
+  public void shouldReturn422WhenTypeIsEmptyOnPut() throws IOException, URISyntaxException {
+    final CustomField customField =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
+
+    final String cfWithHalfName = readFile("fields/put/putCustomFieldEmptyType.json");
+    putWithStatus(CUSTOM_FIELDS_PATH + "/" + customField.getId(), cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturn422WhenEntityTypeIsEmptyOnPut() throws IOException, URISyntaxException {
+    final CustomField customField =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
+
+    final String cfWithHalfName = readFile("fields/put/putCustomFieldEmptyEntityType.json");
+    putWithStatus(CUSTOM_FIELDS_PATH + "/" + customField.getId(), cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test

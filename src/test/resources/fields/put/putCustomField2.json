@@ -3,5 +3,6 @@
   "type" : "SINGLE_CHECKBOX",
   "visible": true,
   "required": true,
+  "entityType": "user",
   "helpText": "Set expiration date"
 }

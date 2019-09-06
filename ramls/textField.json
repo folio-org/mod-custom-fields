@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Text Field Schema",
+  "description": "Text Field Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "maxSize": {
+      "type": "integer",
+      "description": "The text field maximum length",
+      "example": 42
+    }
+  }
+}

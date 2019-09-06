@@ -3,5 +3,6 @@
   "visible": true,
   "required": true,
   "type": "RADIO_BUTTON",
+  "entityType": "user",
   "helpText": "Provide a department"
 }

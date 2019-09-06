@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Select Field Schema",
+  "description": "Select Field Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaults": {
+      "type": "array",
+      "description": "Defines the custom field default value(s)",
+      "example": "ABC"
+    },
+    "multiSelect": {
+      "type": "boolean",
+      "description": "Defines if the custom field is a multi select",
+      "example": false
+    },
+    "options": {
+      "type": "object",
+      "description": "Defines the options for the custom field",
+      "$ref": "customFieldOptions.json"
+    }
+  }
+}
