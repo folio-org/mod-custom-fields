@@ -22,7 +22,8 @@ import org.folio.common.pf.PartialFunction;
 @Configuration
 @ComponentScan(basePackages = {
   "org.folio.repository",
-  "org.folio.service"})
+  "org.folio.service",
+  "org.folio.validate"})
 public class ApplicationConfig {
 
   @Bean

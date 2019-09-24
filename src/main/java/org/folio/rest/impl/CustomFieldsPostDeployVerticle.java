@@ -6,11 +6,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.rest.resource.interfaces.InitAPI;
+import org.folio.rest.resource.interfaces.PostDeployVerticle;
 import org.folio.spring.ApplicationConfig;
 import org.folio.spring.SpringContextUtil;
 
-public class InitAPIImpl implements InitAPI {
+public class CustomFieldsPostDeployVerticle implements PostDeployVerticle {
 
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
