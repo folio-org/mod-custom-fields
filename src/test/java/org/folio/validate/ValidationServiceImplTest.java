@@ -9,9 +9,14 @@ import static org.folio.test.util.TestUtil.readFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.DBTestUtil;
+import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Parameter;
 import org.folio.spring.SpringContextUtil;
@@ -28,6 +33,7 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import io.restassured.http.Header;
 import io.vertx.core.Context;
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -41,7 +47,7 @@ public class ValidationServiceImplTest extends TestBase {
   private ValidationService validationService;
 
   @Autowired
-  Context vertxContext;
+  private Context vertxContext;
 
   @Before
   public void setUp() throws IOException, URISyntaxException {
@@ -65,8 +71,9 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnSuccessfulFutureIfValidationSucceeds(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"pizza\"}", CustomFieldValue.class);
     validationService
-      .validateCustomFields( Collections.singletonMap("favoritefood_1", "pizza"), STUB_TENANT)
+      .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .map(o -> {
         async.complete();
         return null;
@@ -81,8 +88,9 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnAnErrorIfValidationFails(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"table\"}", CustomFieldValue.class);
     validationService
-      .validateCustomFields( Collections.singletonMap("favoritefood_1", "table"), STUB_TENANT)
+      .validateCustomFields( customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .otherwise(e -> {
         if(!(e instanceof CustomFieldValidationException)){
           context.fail(e);
@@ -91,7 +99,7 @@ public class ValidationServiceImplTest extends TestBase {
         Errors errors = ((CustomFieldValidationException) e).getErrors();
         Parameter errorParam = errors.getErrors().get(0).getParameters().get(0);
         context.assertEquals("favoritefood_1", errorParam.getKey());
-        context.assertEquals("table", errorParam.getValue());
+        context.assertEquals("\"table\"", errorParam.getValue());
         async.complete();
         return null;
       });
@@ -101,8 +109,9 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnAnErrorIfFieldIsNotFound(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"notexistingfield\":\"value\"}", CustomFieldValue.class);
     validationService
-      .validateCustomFields( Collections.singletonMap("notexistingfield", "value"), STUB_TENANT)
+      .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .otherwise(e -> {
         if(!(e instanceof CustomFieldValidationException)){
           context.fail(e);
@@ -118,7 +127,7 @@ public class ValidationServiceImplTest extends TestBase {
   }
 
   private void createRadioButtonField() throws IOException, URISyntaxException {
-    String radioButton = readFile("fields/post/postCustomFieldRadioButton.json");
+    String radioButton = readFile("fields/model/radioButtonField.json");
     postWithStatus(CUSTOM_FIELDS_PATH, radioButton, SC_CREATED, USER8);
   }
 }
