@@ -1,5 +1,7 @@
 package org.folio.validate;
 
+import java.util.List;
+
 import org.folio.rest.jaxrs.model.CustomField;
 
 public interface CustomFieldValidator {
@@ -15,5 +17,5 @@ public interface CustomFieldValidator {
   /**
    * @return Type of custom field that can be processed by this validator
    */
-  CustomField.Type supportedType();
+  List<CustomField.Type> supportedTypes();
 }

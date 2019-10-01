@@ -65,7 +65,7 @@ public class ValidationServiceImpl implements ValidationService {
 
   private List<Error> validate(Object fieldValue, CustomField fieldDefinition) {
     return validators.stream()
-      .filter(validator -> validator.supportedType() == fieldDefinition.getType())
+      .filter(validator -> validator.supportedTypes().contains(fieldDefinition.getType()))
       .findFirst()
       .map(validator -> validate(fieldValue, fieldDefinition, validator))
       .orElse(Collections.emptyList());

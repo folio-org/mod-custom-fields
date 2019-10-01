@@ -1,9 +1,0 @@
-{
-  "name": "Long Text box field",
-  "type" : "TEXTBOX_LONG",
-  "refId": "long-textbox-field",
-  "visible": true,
-  "required": true,
-  "entityType": "user",
-  "helpText": "Set text"
-}
