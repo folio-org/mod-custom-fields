@@ -19,11 +19,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.folio.common.OkapiParams;
 import org.folio.common.pf.PartialFunction;
 import org.folio.rest.annotations.Validate;
+import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.resource.CustomFields;
 import org.folio.service.CustomFieldsService;
 import org.folio.spring.SpringContextUtil;
+import org.folio.validate.definition.CommonDefinitionValidator;
 
 public class CustomFieldsImpl implements CustomFields {
 
@@ -33,14 +35,18 @@ public class CustomFieldsImpl implements CustomFields {
   @Autowired @Qualifier("customFieldsExcHandler")
   private PartialFunction<Throwable, Response> excHandler;
 
+  @Autowired
+  private CommonDefinitionValidator definitionValidator;
+
   public CustomFieldsImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
-  @Validate
+  @HandleValidationErrors
   public void postCustomFields(String lang, CustomField entity, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    definitionValidator.validate(entity);
     final Future<CustomField> saved = customFieldsService.save(entity, new OkapiParams(okapiHeaders));
     respond(saved,
       customField -> PostCustomFieldsResponse.respond201WithApplicationJson(customField, headersFor201()),
@@ -74,9 +80,10 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
-  @Validate
+  @HandleValidationErrors
   public void putCustomFieldsById(String id, String lang, CustomField entity, Map<String, String> okapiHeaders,
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    definitionValidator.validate(entity);
     Future<Void> updated = customFieldsService.update(id, entity, new OkapiParams(okapiHeaders));
     respond(updated, v -> PutCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }

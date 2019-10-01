@@ -1,0 +1,9 @@
+{
+  "name": "Department",
+  "type" : "SINGLE_CHECKBOX_INVALID",
+  "refId": "not-null-ref-id",
+  "visible": true,
+  "required": true,
+  "entityType": "user",
+  "helpText": "Provide a department"
+}

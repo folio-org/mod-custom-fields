@@ -124,32 +124,44 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldNotCreateCustomFieldWhenNameIsTooLongOnPost() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomNameWithTooLongName.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY, USER8);
+    final String customField = readFile("fields/post/postCustomNameWithTooLongName.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY, USER8);
   }
 
   @Test
   public void shouldReturn422WhenNameIsEmptyOnPost() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyName.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY, USER8);
+    final String customField = readFile("fields/post/postCustomFieldEmptyName.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY, USER8);
   }
 
   @Test
   public void shouldReturn422WhenTypeIsEmptyOnPost() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyType.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
+    final String customField = readFile("fields/post/postCustomFieldEmptyType.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test
   public void shouldReturn422WhenEntityTypeIsEmptyOnPost() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomFieldEmptyEntityType.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
+    final String customField = readFile("fields/post/postCustomFieldEmptyEntityType.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturnErrorIfHelpTextTooLong() throws IOException, URISyntaxException {
+    final String customField = readFile("fields/post/postCustomFieldHelpTextInvalid.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturnErrorIfInvalidCustomFieldType() throws IOException, URISyntaxException {
+    final String customField = readFile("fields/post/postInvalidCustomField.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_BAD_REQUEST);
   }
 
   @Test
   public void shouldReturn400WhenNoUserHeader() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomFieldHalfName.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_BAD_REQUEST);
+    final String customField = readFile("fields/post/postCustomFieldHalfName.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_BAD_REQUEST);
   }
 
   @Test

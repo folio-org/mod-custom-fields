@@ -3,40 +3,34 @@ package org.folio.validate;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.apache.http.HttpStatus.SC_CREATED;
+
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.validation.Valid;
-
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.impl.DBTestUtil;
-import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.rest.jaxrs.model.Errors;
-import org.folio.rest.jaxrs.model.Parameter;
-import org.folio.spring.SpringContextUtil;
-import org.folio.test.util.TestBase;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.http.Header;
 import io.vertx.core.Context;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.rest.impl.DBTestUtil;
+import org.folio.rest.jaxrs.model.Errors;
+import org.folio.rest.jaxrs.model.Parameter;
+import org.folio.spring.SpringContextUtil;
+import org.folio.test.util.TestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class ValidationServiceImplTest extends TestBase {
@@ -127,7 +121,7 @@ public class ValidationServiceImplTest extends TestBase {
   }
 
   private void createRadioButtonField() throws IOException, URISyntaxException {
-    String radioButton = readFile("fields/model/radioButtonField.json");
+    String radioButton = readFile("fields/post/radioButton/postCustomFieldRadioButton.json");
     postWithStatus(CUSTOM_FIELDS_PATH, radioButton, SC_CREATED, USER8);
   }
 }
