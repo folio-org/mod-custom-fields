@@ -1,0 +1,12 @@
+{
+  "name": "Short Text box field",
+  "type": "TEXTBOX_SHORT",
+  "refId": "textbox-field",
+  "visible": true,
+  "required": true,
+  "entityType": "user",
+  "helpText": "Set text",
+  "textField": {
+    "maxSize": 150
+  }
+}

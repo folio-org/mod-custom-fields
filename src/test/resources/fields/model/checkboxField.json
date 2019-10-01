@@ -1,0 +1,12 @@
+{
+  "name": "Is student",
+  "refId": "isstudent_1",
+  "visible": true,
+  "required": true,
+  "type": "SINGLE_CHECKBOX",
+  "entityType": "user",
+  "helpText": "Check if user is a student",
+  "checkboxField" : {
+    "default" : true
+  }
+}

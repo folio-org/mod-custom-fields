@@ -1,0 +1,16 @@
+{
+  "name": "favoriteFoods",
+  "refId": "favoritefoods_1",
+  "visible": true,
+  "required": true,
+  "type": "MULTI_SELECT_DROPDOWN",
+  "entityType": "user",
+  "helpText": "Choose list of your favorite foods",
+  "selectField" : {
+    "defaults" : ["eggs", "pizza"],
+    "multiSelect" : true,
+    "options" :  {
+      "values" : ["eggs", "pizza", "potatoes" ]
+    }
+  }
+}
