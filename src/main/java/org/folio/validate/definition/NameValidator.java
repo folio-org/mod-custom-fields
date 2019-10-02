@@ -1,6 +1,7 @@
 package org.folio.validate.definition;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomField;
@@ -8,7 +9,8 @@ import org.folio.rest.jaxrs.model.CustomField;
 @Component
 public class NameValidator implements Validatable {
 
-  private static final int NAME_LENGTH_LIMIT = 65;
+  @Value("${custom.fields.definition.name.length}")
+  private int NAME_LENGTH_LIMIT;
 
   /**
    * Validates the length of the custom 'name' text attribute

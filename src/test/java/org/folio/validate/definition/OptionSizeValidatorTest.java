@@ -6,11 +6,21 @@ import java.net.URISyntaxException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.spring.TestConfiguration;
 import org.folio.test.util.TestUtil;
 
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = TestConfiguration.class)
 public class OptionSizeValidatorTest {
+
+  @Autowired
+  private OptionSizeValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
@@ -20,6 +30,6 @@ public class OptionSizeValidatorTest {
     expectedEx.expectMessage("The max option size for 'Radio button' custom field type is 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postRadioButtonWithInvalidSizeOptions.json", CustomField.class);
-    new OptionSizeValidator().validateDefinition(customField);
+    validator.validateDefinition(customField);
   }
 }

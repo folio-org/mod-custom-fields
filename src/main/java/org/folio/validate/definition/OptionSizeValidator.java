@@ -1,6 +1,7 @@
 package org.folio.validate.definition;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomField;
@@ -8,7 +9,8 @@ import org.folio.rest.jaxrs.model.CustomField;
 @Component
 public class OptionSizeValidator implements Validatable {
 
-  private static final int RADIO_BUTTON_MAX_OPTION_SIZE = 5;
+  @Value("${custom.fields.definition.radioButton.option.size}")
+  private int RADIO_BUTTON_MAX_OPTION_SIZE;
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
