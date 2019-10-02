@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.folio.rest.jaxrs.model.CustomField;
 
 @Component
-public class RadioButtonDefinitionValidator implements DefinitionValidationService {
+public class OptionSizeValidator implements Validatable {
 
   private static final int RADIO_BUTTON_MAX_OPTION_SIZE = 5;
 

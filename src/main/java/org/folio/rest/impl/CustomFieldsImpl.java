@@ -25,7 +25,7 @@ import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.resource.CustomFields;
 import org.folio.service.CustomFieldsService;
 import org.folio.spring.SpringContextUtil;
-import org.folio.validate.definition.CommonDefinitionValidator;
+import org.folio.validate.definition.DefinitionValidator;
 
 public class CustomFieldsImpl implements CustomFields {
 
@@ -36,7 +36,7 @@ public class CustomFieldsImpl implements CustomFields {
   private PartialFunction<Throwable, Response> excHandler;
 
   @Autowired
-  private CommonDefinitionValidator definitionValidator;
+  private DefinitionValidator definitionValidator;
 
   public CustomFieldsImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());

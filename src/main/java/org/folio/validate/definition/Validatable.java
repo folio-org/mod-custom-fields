@@ -2,7 +2,7 @@ package org.folio.validate.definition;
 
 import org.folio.rest.jaxrs.model.CustomField;
 
-public interface DefinitionValidationService {
+public interface Validatable {
 
   /**
    * Validates custom field definition

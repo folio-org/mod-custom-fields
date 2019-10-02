@@ -1,4 +1,4 @@
-package org.folio.validate;
+package org.folio.validate.definition;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -9,9 +9,8 @@ import org.junit.rules.ExpectedException;
 
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.test.util.TestUtil;
-import org.folio.validate.definition.RadioButtonDefinitionValidator;
 
-public class RadioButtonDefinitionValidatorTest {
+public class OptionSizeValidatorTest {
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
@@ -21,6 +20,6 @@ public class RadioButtonDefinitionValidatorTest {
     expectedEx.expectMessage("The max option size for 'Radio button' custom field type is 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postRadioButtonWithInvalidSizeOptions.json", CustomField.class);
-    new RadioButtonDefinitionValidator().validateDefinition(customField);
+    new OptionSizeValidator().validateDefinition(customField);
   }
 }
