@@ -8,7 +8,10 @@
     "defaults": {
       "type": "array",
       "description": "Defines the custom field default value(s)",
-      "example": "ABC"
+      "items": {
+        "type": "string"
+      },
+      "example": "[\"Design\"]"
     },
     "multiSelect": {
       "type": "boolean",

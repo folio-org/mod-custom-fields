@@ -9,7 +9,6 @@
     "defaults" : ["eggs"],
     "multiSelect" : false,
     "options" :  {
-      "values" : ["eggs", "pizza", "potatoes", "pie", "barbeque", "icecream"]
     }
   }
 }
