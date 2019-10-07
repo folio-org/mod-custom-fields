@@ -14,7 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 
 import org.folio.common.pf.PartialFunction;
 import org.folio.db.exc.translation.DBExceptionTranslator;
@@ -25,7 +26,6 @@ import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
   "org.folio.repository",
   "org.folio.service",
   "org.folio.validate"})
-@PropertySource("classpath:application.properties")
 public class ApplicationConfig {
 
   @Bean
@@ -42,5 +42,12 @@ public class ApplicationConfig {
   public DBExceptionTranslator excTranslator(@Value("${db.exception.translator.name:postgresql}") String translatorName) {
     DBExceptionTranslatorFactory factory = DBExceptionTranslatorFactory.instance();
     return factory.create(translatorName);
+  }
+
+  @Bean
+  public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+    PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+    configurer.setLocation(new ClassPathResource("application.properties"));
+    return configurer;
   }
 }
