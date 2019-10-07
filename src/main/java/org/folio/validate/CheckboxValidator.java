@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.folio.rest.jaxrs.model.CustomField;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CheckboxValidator implements CustomFieldValidator {
   @Override
   public void validate(Object fieldValue, CustomField fieldDefinition) {

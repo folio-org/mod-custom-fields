@@ -19,6 +19,6 @@ public class SelectFieldValidator implements CustomFieldValidator {
 
   @Override
   public List<CustomField.Type> supportedTypes() {
-    return Arrays.asList(CustomField.Type.RADIO_BUTTON, CustomField.Type.SINGLE_CHECKBOX);
+    return Arrays.asList(CustomField.Type.RADIO_BUTTON, CustomField.Type.SINGLE_SELECT_DROPDOWN);
   }
 }
