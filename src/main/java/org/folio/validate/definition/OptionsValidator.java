@@ -1,6 +1,8 @@
 package org.folio.validate.definition;
 
+import static org.folio.rest.jaxrs.model.CustomField.Type.MULTI_SELECT_DROPDOWN;
 import static org.folio.rest.jaxrs.model.CustomField.Type.RADIO_BUTTON;
+import static org.folio.rest.jaxrs.model.CustomField.Type.SINGLE_SELECT_DROPDOWN;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,8 @@ public class OptionsValidator implements Validatable {
 
   @Override
   public boolean isApplicable(CustomField fieldDefinition) {
-    return RADIO_BUTTON.equals(fieldDefinition.getType());
+    return RADIO_BUTTON.equals(fieldDefinition.getType()) ||
+           SINGLE_SELECT_DROPDOWN.equals(fieldDefinition.getType()) ||
+           MULTI_SELECT_DROPDOWN.equals(fieldDefinition.getType());
   }
 }

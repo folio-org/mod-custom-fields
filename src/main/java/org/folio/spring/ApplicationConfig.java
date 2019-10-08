@@ -7,6 +7,7 @@ import static org.folio.rest.exc.RestExceptionHandlers.baseUnprocessableHandler;
 import static org.folio.rest.exc.RestExceptionHandlers.completionCause;
 import static org.folio.rest.exc.RestExceptionHandlers.generalHandler;
 import static org.folio.rest.exc.RestExceptionHandlers.logged;
+import static org.folio.rest.exceptions.CustomFieldTypeExceptionHandler.customFieldTypeValidationHandler;
 
 import javax.ws.rs.core.Response;
 
@@ -29,10 +30,18 @@ import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
 public class ApplicationConfig {
 
   @Bean
+  public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+    PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+    configurer.setLocation(new ClassPathResource("application.properties"));
+    return configurer;
+  }
+
+  @Bean
   public PartialFunction<Throwable, Response> customFieldsExcHandler() {
     return logged(baseBadRequestHandler()
       .orElse(baseNotFoundHandler())
       .orElse(baseUnauthorizedHandler())
+      .orElse(customFieldTypeValidationHandler())
       .orElse(baseUnprocessableHandler())
       .orElse(generalHandler())
       .compose(completionCause()));
@@ -42,12 +51,5 @@ public class ApplicationConfig {
   public DBExceptionTranslator excTranslator(@Value("${db.exception.translator.name:postgresql}") String translatorName) {
     DBExceptionTranslatorFactory factory = DBExceptionTranslatorFactory.instance();
     return factory.create(translatorName);
-  }
-
-  @Bean
-  public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-    PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-    configurer.setLocation(new ClassPathResource("application.properties"));
-    return configurer;
   }
 }

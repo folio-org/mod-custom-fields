@@ -25,11 +25,29 @@ public class OptionsValidatorTest {
   public ExpectedException expectedEx = ExpectedException.none();
 
   @Test
-  public void shouldReturnErrorIfIncorrectNumberOfOptions() throws IOException, URISyntaxException {
+  public void shouldReturnErrorIfRadioButtonIncorrectNumberOfOptions() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
     expectedEx.expectMessage("The max option size for 'RADIO_BUTTON' custom field type is 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postRadioButtonWithInvalidSizeOptions.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
+  @Test
+  public void shouldReturnErrorIfSingleSelectIncorrectNumberOfOptions() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The max option size for 'SINGLE_SELECT_DROPDOWN' custom field type is 5");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/singleSelect/postSingleSelectWithInvalidSizeOptions.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
+  @Test
+  public void shouldReturnErrorIfMultiSelectIncorrectNumberOfOptions() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The max option size for 'MULTI_SELECT_DROPDOWN' custom field type is 5");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/multiSelect/postMultiSelectWithInvalidSizeOptions.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 

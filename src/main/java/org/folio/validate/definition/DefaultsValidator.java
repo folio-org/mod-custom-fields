@@ -37,7 +37,7 @@ public class DefaultsValidator implements Validatable {
   @Override
   public boolean isApplicable(CustomField fieldDefinition) {
     return RADIO_BUTTON.equals(fieldDefinition.getType()) ||
-      SINGLE_SELECT_DROPDOWN.equals(fieldDefinition.getType()) ||
-      MULTI_SELECT_DROPDOWN.equals(fieldDefinition.getType()) ;
+           SINGLE_SELECT_DROPDOWN.equals(fieldDefinition.getType()) ||
+           MULTI_SELECT_DROPDOWN.equals(fieldDefinition.getType());
   }
 }

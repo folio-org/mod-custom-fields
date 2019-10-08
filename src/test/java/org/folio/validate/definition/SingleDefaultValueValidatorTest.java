@@ -17,19 +17,35 @@ import org.folio.test.util.TestUtil;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-public class RadioButtonDefinitionValidatorTest {
+public class SingleDefaultValueValidatorTest {
 
   @Autowired
-  private RadioButtonDefinitionValidator validator;
+  private SingleDefaultValueValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
   @Test
-  public void shouldReturnErrorIfIncorrectNumberOfDefaults() throws IOException, URISyntaxException {
+  public void shouldReturnErrorIfRadioButtonIncorrectNumberOfDefaults() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
     expectedEx.expectMessage("The max defaults size for 'RADIO_BUTTON' custom field type is 1");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postRadioButtonWithInvalidDefaultsSize.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
+  @Test
+  public void shouldReturnErrorIfSingleSelectIncorrectNumberOfDefaults() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The max defaults size for 'SINGLE_SELECT_DROPDOWN' custom field type is 1");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/singleSelect/postSingleSelectInvalidDefaultsSize.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
+  @Test(expected = Test.None.class)
+  public void shouldNotReturnErrorIfSingleSelectValidNumberOfDefaults() throws IOException, URISyntaxException {
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/singleSelect/postSingleSelectCustonField.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 }

@@ -1,5 +1,8 @@
 package org.folio.validate.definition;
 
+import static org.folio.rest.jaxrs.model.CustomField.Type.RADIO_BUTTON;
+import static org.folio.rest.jaxrs.model.CustomField.Type.SINGLE_SELECT_DROPDOWN;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -11,10 +14,10 @@ import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.SelectField;
 
 @Component
-public class RadioButtonDefinitionValidator implements Validatable {
+public class SingleDefaultValueValidator implements Validatable {
 
-  @Value("${custom.fields.definition.radioButton.option.default.size}")
-  private int RADIO_BUTTON_DEFAULTS_SIZE;
+  @Value("${custom.fields.definition.single.default.size}")
+  private int SINGLE_DEFAULT_SIZE;
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
@@ -28,13 +31,14 @@ public class RadioButtonDefinitionValidator implements Validatable {
     if (Objects.nonNull(selectField) && Objects.nonNull(selectField.getDefaults())) {
 
       List<String> defaults = selectField.getDefaults();
-      Validate.isTrue(defaults.size() <= RADIO_BUTTON_DEFAULTS_SIZE,
-        "The max defaults size for '" + fieldDefinition.getType() + "' custom field type is %s", RADIO_BUTTON_DEFAULTS_SIZE);
+      Validate.isTrue(defaults.size() <= SINGLE_DEFAULT_SIZE,
+        "The max defaults size for '" + fieldDefinition.getType() + "' custom field type is %s", SINGLE_DEFAULT_SIZE);
     }
   }
 
   @Override
   public boolean isApplicable(CustomField fieldDefinition) {
-    return CustomField.Type.RADIO_BUTTON.equals(fieldDefinition.getType());
+    return RADIO_BUTTON.equals(fieldDefinition.getType()) ||
+           SINGLE_SELECT_DROPDOWN.equals(fieldDefinition.getType());
   }
 }

@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
+
 import static org.folio.rest.ResponseHelper.respond;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.headersFor201;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
@@ -84,7 +87,15 @@ public class CustomFieldsImpl implements CustomFields {
   public void putCustomFieldsById(String id, String lang, CustomField entity, Map<String, String> okapiHeaders,
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     definitionValidator.validate(entity);
-    Future<Void> updated = customFieldsService.update(id, entity, new OkapiParams(okapiHeaders));
+
+    Future<Void> updated = customFieldsService.findById(id, tenantId(okapiHeaders))
+      .compose(customField -> {
+        if (!customField.getType().equals(entity.getType())) {
+          return failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."));
+        }
+        return succeededFuture();
+      })
+      .compose(o -> customFieldsService.update(id, entity, new OkapiParams(okapiHeaders)));
     respond(updated, v -> PutCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }
 }

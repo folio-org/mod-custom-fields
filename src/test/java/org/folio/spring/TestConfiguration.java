@@ -18,6 +18,7 @@ public class TestConfiguration {
     configurer.setLocation(new ClassPathResource("test-application.properties"));
     return configurer;
   }
+
   @Bean
   public Vertx vertx(){
     //Initialize empty vertx object to be used by ApplicationConfig
