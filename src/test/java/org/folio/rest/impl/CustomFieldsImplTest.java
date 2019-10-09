@@ -16,12 +16,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.rest.impl.CustomFieldsDBTestUtil.saveCustomField;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -35,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.folio.test.util.TestBase;
 
@@ -403,10 +406,28 @@ public class CustomFieldsImplTest extends TestBase {
 
   }
 
+  @Test
+  public void shouldReturnEmptyStatsForExistingField() throws IOException, URISyntaxException {
+    final CustomField field = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+
+    CustomFieldStatisticCollection stats = getWithOk(
+      CUSTOM_FIELDS_PATH + "/" + field.getId() + "/stats").as(CustomFieldStatisticCollection.class);
+
+    assertEquals(stats, new CustomFieldStatisticCollection()
+      .withStats(Collections.emptyList())
+      .withTotalRecords(0));
+  }
+
+  @Test
+  public void shouldFailWith404WhenStatsRequestedForNonExistingField() throws IOException, URISyntaxException {
+    getWithStatus(CUSTOM_FIELDS_PATH + "/" + STUB_FIELD_ID + "/stats", SC_NOT_FOUND);
+  }
+
   private void createFields() throws IOException, URISyntaxException {
     CustomField postField2 = readJsonFile("fields/post/postCustomField2.json", CustomField.class);
     CustomField postField = readJsonFile("fields/post/postCustomField.json", CustomField.class);
-    CustomFieldsDBTestUtil.saveCustomField(STUB_FIELD_ID, postField, vertx);
-    CustomFieldsDBTestUtil.saveCustomField(STUB_FIELD_ID_2, postField2, vertx);
+    saveCustomField(STUB_FIELD_ID, postField, vertx);
+    saveCustomField(STUB_FIELD_ID_2, postField2, vertx);
   }
 }

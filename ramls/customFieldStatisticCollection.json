@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "Collection of custom field usage",
+  "additionalProperties": false,
+  "properties": {
+    "stats": {
+      "type": "array",
+      "description": "An array of custom field usage statistic",
+      "items": {
+        "type": "object",
+        "$ref": "customFieldStatistic.json"
+      }
+    },
+    "totalRecords": {
+      "description": "Total number of records available, that match search conditions",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "stats",
+    "totalRecords"
+  ]
+}
