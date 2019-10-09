@@ -32,7 +32,7 @@ public class ApplicationConfig {
   @Bean
   public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
     PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-    configurer.setLocation(new ClassPathResource("application.properties"));
+    configurer.setLocation(new ClassPathResource("custom-fields-application.properties"));
     return configurer;
   }
 
