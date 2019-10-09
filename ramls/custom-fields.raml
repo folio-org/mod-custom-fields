@@ -12,6 +12,7 @@ documentation:
 types:
   customFieldCollection: !include customFieldCollection.json
   customField: !include customField.json
+  customFieldStatisticCollection: !include customFieldStatisticCollection.json
   errors: !include raml-util/schemas/errors.schema
 
 traits:
@@ -23,6 +24,7 @@ traits:
 resourceTypes:
   collection: !include raml-util/rtypes/collection.raml
   collection-item: !include raml-util/rtypes/item-collection.raml
+  collection-readonly: !include raml-util/rtypes/get-only.raml
 
 
 /custom-fields:
@@ -48,3 +50,10 @@ resourceTypes:
       collection-item:
         schema: customField
         exampleItem: !include examples/customField.sample
+    /stats:
+      displayName: Custom field usage statistic
+      description: Returns usage statistic of custom field with the given id
+      type:
+        collection-readonly:
+          schema: customFieldStatisticCollection
+          exampleCollection: !include examples/customFieldStatisticCollection.sample

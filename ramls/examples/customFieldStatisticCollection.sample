@@ -1,0 +1,13 @@
+{
+  "stats": [
+    {
+      "entityType": "package",
+      "count": 10
+    },
+    {
+      "entityType": "user",
+      "count": 3
+    }
+  ],
+  "totalRecords": 2
+}
