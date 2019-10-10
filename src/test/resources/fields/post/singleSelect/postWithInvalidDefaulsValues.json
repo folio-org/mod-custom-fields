@@ -2,14 +2,14 @@
   "name": "favoriteFood",
   "visible": true,
   "required": true,
-  "type": "RADIO_BUTTON",
+  "type": "SINGLE_SELECT_DROPDOWN",
   "entityType": "user",
   "helpText": "Choose your favorite food",
   "selectField" : {
-    "defaults" : ["eggs", "pizza"],
+    "defaults" : ["icecream"],
     "multiSelect" : false,
     "options" :  {
-      "values" : ["eggs", "pizza", "potatoes", "pie", "barbeque", "icecream"]
+      "values" : ["eggs", "pizza", "potatoes", "pie", "barbeque"]
     }
   }
 }

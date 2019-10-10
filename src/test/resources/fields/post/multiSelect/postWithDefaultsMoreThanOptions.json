@@ -1,0 +1,15 @@
+{
+  "name": "favoriteFood",
+  "visible": true,
+  "required": true,
+  "type": "MULTI_SELECT_DROPDOWN",
+  "entityType": "user",
+  "helpText": "Choose your favorite food",
+  "selectField" : {
+    "defaults" : ["potatoes", "icecream"],
+    "multiSelect" : true,
+    "options" :  {
+      "values" : ["potatoes"]
+    }
+  }
+}
