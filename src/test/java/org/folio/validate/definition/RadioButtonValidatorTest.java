@@ -20,7 +20,7 @@ import org.folio.test.util.TestUtil;
 public class RadioButtonValidatorTest {
 
   @Autowired
-  private RadioButtonValidator validator;
+  private SingleSelectDropdownValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
@@ -36,7 +36,7 @@ public class RadioButtonValidatorTest {
   @Test
   public void shouldReturnErrorIfOptionEmpty() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The defaults size can not be more than options number");
+    expectedEx.expectMessage("The default value must be one of defined options: []");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithEmptyOptions.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -45,18 +45,9 @@ public class RadioButtonValidatorTest {
   @Test
   public void shouldReturnErrorIfNumberOfDefaultsMoreThanDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The defaults size can not be more than options number");
+    expectedEx.expectMessage("The default value must be one of defined options: [eggs, pizza]");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithDefaultSizeMoreThanDefined.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldReturnErrorIfOptionNull() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("Options can not be null if 'defaults' defined.");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/radioButton/postWithNullOption.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 

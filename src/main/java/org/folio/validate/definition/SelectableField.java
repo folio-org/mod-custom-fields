@@ -1,40 +1,31 @@
 package org.folio.validate.definition;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.SelectField;
 
-@Component
 public abstract class SelectableField {
 
   @Value("${custom.fields.definition.name.length}")
   private int NAME_LENGTH_LIMIT;
 
-  @Value("${custom.fields.definition.single.default.size}")
-  private int SINGLE_DEFAULT_SIZE;
-
-  @Value("#{${custom.fields.definition.option.size}}")
-  private Map<String, Integer> optionsSizeMap;
-
-  void validateOptions(CustomField fieldDefinition) {
+  void validateOptions(CustomField fieldDefinition, int maxSize) {
     final SelectField selectField = fieldDefinition.getSelectField();
 
     if (Objects.nonNull(selectField) && Objects.nonNull(selectField.getOptions())) {
 
       final List<String> values = selectField.getOptions().getValues();
-      final Integer maxOptionSize = optionsSizeMap.get(fieldDefinition.getType().value());
 
       if(!values.isEmpty()) {
-        Validate.isTrue(values.size() <= maxOptionSize,
-          "The max option size for '" + fieldDefinition.getType() + "' custom field type is %s", maxOptionSize);
+        Validate.isTrue(values.size() <= maxSize,
+          "The max option size for '" + fieldDefinition.getType() + "' custom field type is %s", maxSize);
 
         Validate.isTrue(values.stream().allMatch(value -> StringUtils.isNotBlank(value) && value.length() <= NAME_LENGTH_LIMIT),
           "The option name cannot be blank or have more than %s characters", NAME_LENGTH_LIMIT);
@@ -49,13 +40,10 @@ public abstract class SelectableField {
 
       List<String> defaults = selectField.getDefaults();
 
-      if (!defaults.isEmpty()) {
-        Validate.isTrue(Objects.nonNull(fieldDefinition.getSelectField().getOptions()), "Options can not be null if 'defaults' defined.");
+      Validate.isTrue(!containsDuplicates(defaults), "The defaults list should not contain duplicate values");
 
-        final List<String> values = fieldDefinition.getSelectField().getOptions().getValues();
-        Validate.isTrue(values.size() >= defaults.size(), "The defaults size can not be more than options number");
-        Validate.isTrue(values.containsAll(defaults), "The default value must be one of defined options: %s", values);
-      }
+      final List<String> values = fieldDefinition.getSelectField().getOptions().getValues();
+      Validate.isTrue(values.containsAll(defaults), "The default value must be one of defined options: %s", values);
     }
   }
 
@@ -71,7 +59,7 @@ public abstract class SelectableField {
     }
   }
 
-  void validateMultiSelectProperty(CustomField fieldDefinition) {
+  void validateMultiSelectProperty(CustomField fieldDefinition, boolean expectedValue) {
     final SelectField selectField = fieldDefinition.getSelectField();
 
     if (Objects.nonNull(selectField)) {
@@ -80,13 +68,12 @@ public abstract class SelectableField {
       final CustomField.Type customFieldType = fieldDefinition.getType();
 
       Validate.isTrue(Objects.nonNull(multiSelect), "The value for 'multiSelect' should not be null.");
-      if (CustomField.Type.MULTI_SELECT_DROPDOWN.equals(customFieldType)) {
-        Validate.isTrue(multiSelect,
-          "The value for 'multiSelect' should be 'true' for '" + customFieldType + "' custom field type.");
-      } else {
-        Validate.isTrue(!multiSelect,
-          "The value for 'multiSelect' should be 'false' for '" + customFieldType + "' custom field type.");
-      }
+      Validate.isTrue(multiSelect == expectedValue,
+        "The value for 'multiSelect' should be '"+ expectedValue + "' for '" + customFieldType + "' custom field type.");
     }
+  }
+
+  private boolean containsDuplicates(List<String> defaults) {
+      return new HashSet<>(defaults).size() != defaults.size();
   }
 }

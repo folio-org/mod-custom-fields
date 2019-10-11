@@ -45,7 +45,7 @@ public class SingleSelectDropdownValidatorTest {
   @Test
   public void shouldReturnErrorIfOptionEmpty() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The defaults size can not be more than options number");
+    expectedEx.expectMessage("The default value must be one of defined options: [potatoes]");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithDefaultsMoreThanOptions.json", CustomField.class);
     validator.validateDefinition(customField);

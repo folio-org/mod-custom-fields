@@ -2,6 +2,7 @@ package org.folio.validate.definition;
 
 import static org.folio.rest.jaxrs.model.CustomField.Type.MULTI_SELECT_DROPDOWN;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomField;
@@ -9,11 +10,14 @@ import org.folio.rest.jaxrs.model.CustomField;
 @Component
 public class MultiSelectDropdownValidator extends SelectableField implements Validatable {
 
+  @Value("${custom.fields.definition.dropdown.option.size.max}")
+  private int MULTI_SELECT_OPTION_SIZE_MAX;
+
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
     validateDefaults(fieldDefinition);
-    validateOptions(fieldDefinition);
-    validateMultiSelectProperty(fieldDefinition);
+    validateOptions(fieldDefinition, MULTI_SELECT_OPTION_SIZE_MAX);
+    validateMultiSelectProperty(fieldDefinition, true);
   }
 
   @Override
