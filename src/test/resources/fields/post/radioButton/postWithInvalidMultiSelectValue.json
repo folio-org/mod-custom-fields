@@ -1,0 +1,15 @@
+{
+  "name": "favoriteFood",
+  "visible": true,
+  "required": true,
+  "type": "RADIO_BUTTON",
+  "entityType": "user",
+  "helpText": "Choose your favorite food",
+  "selectField" : {
+    "defaults" : ["potatoes"],
+    "multiSelect" : true,
+    "options" :  {
+      "values" : ["eggs", "pizza", "potatoes", "pie", "barbeque"]
+    }
+  }
+}

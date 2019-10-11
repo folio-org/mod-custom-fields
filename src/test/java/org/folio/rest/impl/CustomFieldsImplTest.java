@@ -293,7 +293,7 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals("Provide a second department", field.getHelpText());
     assertEquals(false, field.getRequired());
     assertEquals(false, field.getVisible());
-    assertEquals(CustomField.Type.RADIO_BUTTON, field.getType());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, field.getType());
 
     final Metadata noteTypeMetadata = field.getMetadata();
 
@@ -317,7 +317,7 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals("Set expiration date", field.getHelpText());
     assertEquals(true, field.getRequired());
     assertEquals(true, field.getVisible());
-    assertEquals(CustomField.Type.SINGLE_CHECKBOX, field.getType());
+    assertEquals(CustomField.Type.TEXTBOX_SHORT, field.getType());
 
     final Metadata noteTypeMetadata = field.getMetadata();
 
@@ -326,6 +326,15 @@ public class CustomFieldsImplTest extends TestBase {
 
     assertEquals(USER9.getValue(), noteTypeMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", noteTypeMetadata.getUpdatedByUsername());
+  }
+
+  @Test
+  public void shouldReturn422WhenCustomFieldTypeChangedOnPut() throws IOException, URISyntaxException {
+    final CustomField customField =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
+    putWithStatus(CUSTOM_FIELDS_PATH + "/" + customField.getId(),
+      readFile("fields/put/putCustomField2.json"), SC_UNPROCESSABLE_ENTITY, USER9);
   }
 
   @Test

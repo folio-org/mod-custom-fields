@@ -23,5 +23,9 @@
       "description": "Defines the options for the custom field",
       "$ref": "customFieldOptions.json"
     }
-  }
+  },
+  "required": [
+    "multiSelect",
+    "options"
+  ]
 }

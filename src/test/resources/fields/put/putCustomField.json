@@ -1,6 +1,6 @@
 {
   "name": "Department 2",
-  "type" : "RADIO_BUTTON",
+  "type" : "SINGLE_CHECKBOX",
   "visible": false,
   "required": false,
   "entityType": "user",

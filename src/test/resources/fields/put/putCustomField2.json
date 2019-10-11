@@ -1,6 +1,6 @@
 {
   "name": "Expiration Date",
-  "type" : "SINGLE_CHECKBOX",
+  "type" : "TEXTBOX_SHORT",
   "visible": true,
   "required": true,
   "entityType": "user",
