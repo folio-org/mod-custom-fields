@@ -1,0 +1,8 @@
+{
+  "name": "favoriteFood",
+  "visible": true,
+  "required": true,
+  "type": "RADIO_BUTTON",
+  "entityType": "user",
+  "helpText": "Choose your favorite food"
+}

@@ -15,6 +15,7 @@ public class MultiSelectDropdownValidator extends SelectableField implements Val
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
+    validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
     validateOptions(fieldDefinition, MULTI_SELECT_OPTION_SIZE_MAX);
     validateMultiSelectProperty(fieldDefinition, true);

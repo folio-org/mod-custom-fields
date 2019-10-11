@@ -15,6 +15,7 @@ public class RadioButtonValidator extends SelectableField implements Validatable
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
+    validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
     validateSingleDefaultSize(fieldDefinition);
     validateOptions(fieldDefinition, RADIO_BUTTON_OPTION_SIZE_MAX);

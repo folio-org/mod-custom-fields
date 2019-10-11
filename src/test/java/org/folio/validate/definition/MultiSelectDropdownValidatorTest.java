@@ -86,4 +86,13 @@ public class MultiSelectDropdownValidatorTest {
       "fields/post/multiSelect/postWithDuplicatesInDefaults.json", CustomField.class);
     validator.validateDefinition(customField);
   }
+
+  @Test
+  public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The 'selectField' property should be defined for 'MULTI_SELECT_DROPDOWN' custom field type.");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/multiSelect/postWithSelectFieldNotDefined.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
 }

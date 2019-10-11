@@ -96,6 +96,15 @@ public class RadioButtonValidatorTest {
     validator.validateDefinition(customField);
   }
 
+  @Test
+  public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The 'selectField' property should be defined for 'RADIO_BUTTON' custom field type.");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/radioButton/postWithSelectFieldNotDefined.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
   @Test(expected = Test.None.class)
   public void shouldNotReturnErrorIfDefaultIsNull() throws IOException, URISyntaxException {
     final CustomField customField = TestUtil.readJsonFile(

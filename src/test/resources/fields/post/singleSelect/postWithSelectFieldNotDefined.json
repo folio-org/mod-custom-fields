@@ -1,0 +1,8 @@
+{
+  "name": "favoriteFood",
+  "visible": true,
+  "required": true,
+  "type": "SINGLE_SELECT_DROPDOWN",
+  "entityType": "user",
+  "helpText": "Choose your favorite food"
+}

@@ -15,6 +15,7 @@ public class SingleSelectDropdownValidator extends SelectableField implements Va
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
+    validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
     validateSingleDefaultSize(fieldDefinition);
     validateOptions(fieldDefinition, SINGLE_SELECT_OPTION_SIZE_MAX);

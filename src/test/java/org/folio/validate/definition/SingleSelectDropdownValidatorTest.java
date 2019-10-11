@@ -86,4 +86,13 @@ public class SingleSelectDropdownValidatorTest {
       "fields/post/singleSelect/postWithInvalidMultiSelectValue.json", CustomField.class);
     validator.validateDefinition(customField);
   }
+
+  @Test
+  public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("The 'selectField' property should be defined for 'SINGLE_SELECT_DROPDOWN' custom field type.");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/singleSelect/postWithSelectFieldNotDefined.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
 }
