@@ -3,10 +3,12 @@ package org.folio.validate;
 import static org.folio.validate.ValidationUtil.createError;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.Error;
@@ -66,9 +68,9 @@ public class ValidationServiceImpl implements ValidationService {
   private List<Error> validate(Object fieldValue, CustomField fieldDefinition) {
     return validators.stream()
       .filter(validator -> validator.supportedTypes().contains(fieldDefinition.getType()))
-      .findFirst()
       .map(validator -> validate(fieldValue, fieldDefinition, validator))
-      .orElse(Collections.emptyList());
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
   }
 
   private List<Error> validate(Object fieldValue, CustomField fieldDefinition, CustomFieldValidator validator) {
