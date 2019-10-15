@@ -14,7 +14,7 @@ public class TextFieldValidator implements CustomFieldValidator {
   public void validate(Object fieldValue, CustomField fieldDefinition) {
     Validate.isInstanceOf(String.class, fieldValue, "Text field must be a string");
     Integer maxSize = fieldDefinition.getTextField().getMaxSize();
-    Validate.isTrue(fieldValue.toString().length() <= maxSize, "Maximum length of short text box field is %s" , maxSize);
+    Validate.isTrue(fieldValue.toString().length() <= maxSize, "Maximum length of this text field is %s" , maxSize);
   }
 
   @Override
