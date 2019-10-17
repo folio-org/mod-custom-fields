@@ -5,11 +5,7 @@
   "required": false,
   "entityType": "user",
   "helpText": "Provide a second department",
-  "selectField" : {
-    "defaults" : ["Design"],
-    "multiSelect" : false,
-    "options" :  {
-      "values" : ["Engineering", "Design", "Marketing"]
-    }
+  "checkboxField" : {
+    "default" : true
   }
 }
