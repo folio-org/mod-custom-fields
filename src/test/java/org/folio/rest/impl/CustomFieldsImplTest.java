@@ -38,6 +38,7 @@ import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
+import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.folio.test.util.TestBase;
 
@@ -105,8 +106,8 @@ public class CustomFieldsImplTest extends TestBase {
     final String cfWithAccentName = readFile("fields/post/postCustomFieldWithAccentName.json");
     final CustomField customField_one = postWithStatus(CUSTOM_FIELDS_PATH, cfWithAccentName, SC_CREATED, USER8)
       .as(CustomField.class);
-
-    final CustomField customField_two = postWithStatus(CUSTOM_FIELDS_PATH, cfWithAccentName, SC_CREATED, USER8)
+    final String cfWithAccentName2 = readFile("fields/post/postCustomFieldWithAccentNameSecond.json");
+    final CustomField customField_two = postWithStatus(CUSTOM_FIELDS_PATH, cfWithAccentName2, SC_CREATED, USER8)
       .as(CustomField.class);
     assertEquals("this-is-a-tricky-string_1", customField_one.getRefId());
     assertEquals("this-is-a-tricky-string_2", customField_two.getRefId());
@@ -114,8 +115,8 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldCreateTwoRefIdOnPostCustomFieldWithSameName2() throws IOException, URISyntaxException {
-    final String cfWithHalfName = readFile("fields/post/postCustomFieldHalfName.json");
     final String cfWithAccentName = readFile("fields/post/postCustomFieldWithAccentName.json");
+    final String cfWithHalfName = readFile("fields/post/postCustomFieldHalfName2.json");
     final CustomField customField_one = postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_CREATED, USER8)
       .as(CustomField.class);
 
@@ -262,6 +263,16 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldReturn422ErrorWhenOrderIsInvalid() throws IOException, URISyntaxException {
+    String customFieldFile = readFile("fields/post/postCustomField.json");
+
+    postWithStatus(CUSTOM_FIELDS_PATH, customFieldFile, SC_CREATED, USER8);
+    final Error error = postWithStatus(CUSTOM_FIELDS_PATH, customFieldFile, SC_UNPROCESSABLE_ENTITY, USER8).as(Error.class);
+
+    assertEquals("Order number should be unique.", error.getMessage());
+  }
+
+  @Test
   public void shouldReturn404OnMissingId() {
     getWithStatus(CUSTOM_FIELDS_ID_PATH, SC_NOT_FOUND);
   }
@@ -394,7 +405,7 @@ public class CustomFieldsImplTest extends TestBase {
     final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
       .as(CustomField.class);
 
-    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
 
     deleteWithNoContent(CUSTOM_FIELDS_PATH + "/" + customFieldOne.getId());
 

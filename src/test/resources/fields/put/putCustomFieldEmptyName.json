@@ -3,5 +3,6 @@
   "visible": false,
   "required": false,
   "entityType": "user",
-  "helpText": "Provide a second department"
+  "helpText": "Provide a second department",
+  "order": 1
 }

@@ -4,5 +4,6 @@
   "required": true,
   "type": "RADIO_BUTTON",
   "entityType": "user",
-  "helpText": "Choose your favorite food"
+  "helpText": "Choose your favorite food",
+  "order": 1
 }

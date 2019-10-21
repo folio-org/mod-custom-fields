@@ -3,5 +3,6 @@
   "type" : "RADIO_BUTTON",
   "visible": false,
   "required": false,
-  "helpText": "Provide a second department"
+  "helpText": "Provide a second department",
+  "order": 1
 }

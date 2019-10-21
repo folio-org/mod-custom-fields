@@ -5,5 +5,6 @@
   "visible": true,
   "required": true,
   "entityType": "user",
-  "helpText": "Provide a department"
+  "helpText": "Provide a department",
+  "order": 1
 }
