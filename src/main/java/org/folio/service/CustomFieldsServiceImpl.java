@@ -13,6 +13,7 @@ import org.folio.common.OkapiParams;
 import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
 import org.folio.service.exc.ServiceExceptions;
 
 @Component
@@ -22,6 +23,8 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private CustomFieldsRepository repository;
   @Autowired
   private UserService userService;
+  @Autowired
+  private RecordService recordService;
 
   @Override
   public Future<CustomField> save(CustomField customField, OkapiParams params) {
@@ -61,8 +64,18 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   @Override
   public Future<Void> delete(String id, String tenantId) {
-    return repository.delete(id, tenantId)
+    Future<CustomField> cf = findById(id, tenantId);
+
+    return cf
+      .compose(field -> recordService.deleteAllValues(field, tenantId))
+      .compose(v -> repository.delete(id, tenantId))
       .compose(deleted -> failIfNotFound(deleted, id));
+  }
+
+  @Override
+  public Future<CustomFieldStatisticCollection> retrieveStatistic(String id, String tenantId) {
+    return findById(id, tenantId)
+      .compose(field -> recordService.retrieveStatistic(field, tenantId));
   }
 
   private Future<Void> failIfNotFound(boolean found, String entityId) {

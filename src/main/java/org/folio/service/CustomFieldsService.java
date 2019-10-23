@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import org.folio.common.OkapiParams;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
 
 public interface CustomFieldsService {
 
@@ -34,4 +35,6 @@ public interface CustomFieldsService {
    * Deletes custom field with given id.
    */
   Future<Void> delete(String id, String tenantId);
+
+  Future<CustomFieldStatisticCollection> retrieveStatistic(String id, String tenantId);
 }
