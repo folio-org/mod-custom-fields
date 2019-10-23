@@ -5,6 +5,7 @@
   "required": false,
   "entityType": "user",
   "helpText": "Provide a second department",
+  "order": 1,
   "checkboxField" : {
     "default" : true
   }

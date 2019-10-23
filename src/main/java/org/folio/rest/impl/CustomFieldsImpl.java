@@ -5,6 +5,7 @@ import static io.vertx.core.Future.succeededFuture;
 
 import static org.folio.rest.ResponseHelper.respond;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.headersFor201;
+import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.respond201WithApplicationJson;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.Map;
@@ -51,10 +52,8 @@ public class CustomFieldsImpl implements CustomFields {
   public void postCustomFields(String lang, CustomField entity, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     definitionValidator.validate(entity);
-    final Future<CustomField> saved = customFieldsService.save(entity, new OkapiParams(okapiHeaders));
-    respond(saved,
-      customField -> PostCustomFieldsResponse.respond201WithApplicationJson(customField, headersFor201()),
-      asyncResultHandler, excHandler);
+    Future<CustomField> saved = customFieldsService.save(entity, new OkapiParams(okapiHeaders));
+    respond(saved, customField -> respond201WithApplicationJson(customField, headersFor201()), asyncResultHandler, excHandler);
   }
 
   @Override
@@ -90,12 +89,7 @@ public class CustomFieldsImpl implements CustomFields {
     definitionValidator.validate(entity);
 
     Future<Void> updated = customFieldsService.findById(id, tenantId(okapiHeaders))
-      .compose(customField -> {
-        if (!customField.getType().equals(entity.getType())) {
-          return failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."));
-        }
-        return succeededFuture();
-      })
+      .compose(customField -> checkType(entity, customField))
       .compose(o -> customFieldsService.update(id, entity, new OkapiParams(okapiHeaders)));
     respond(updated, v -> PutCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }
@@ -107,5 +101,11 @@ public class CustomFieldsImpl implements CustomFields {
     Future<CustomFieldStatisticCollection> stats = customFieldsService.retrieveStatistic(id, tenantId(okapiHeaders));
 
     respond(stats, GetCustomFieldsStatsByIdResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
+  }
+
+  private Future<Object> checkType(CustomField entity, CustomField customField) {
+    return !customField.getType().equals(entity.getType())
+      ? failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."))
+      : succeededFuture();
   }
 }

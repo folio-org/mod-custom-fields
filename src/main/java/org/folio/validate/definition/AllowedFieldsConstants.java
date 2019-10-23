@@ -13,6 +13,7 @@ public class AllowedFieldsConstants {
     "entityType",
     "visible",
     "required",
+    "order",
     "helpText",
     "metadata"
   );
