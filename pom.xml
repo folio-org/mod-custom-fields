@@ -22,6 +22,10 @@
     <folio-service-tools.version>1.2.0</folio-service-tools.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <sonar.exclusions>
+      src/main/java/**/ApplicationConfig.*
+    </sonar.exclusions>
   </properties>
 
   <dependencies>
