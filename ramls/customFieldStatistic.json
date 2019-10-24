@@ -1,9 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "description": "Custom field statistic collection item",
+  "description": "Custom field statistic",
   "additionalProperties": false,
   "properties": {
+    "fieldId": {
+      "type": "string",
+      "description": "Unique generated identifier for the custom field",
+      "example": "62d00c36-a94f-434d-9cd2-c7ea159303da"
+    },
     "entityType": {
       "type": "string",
       "description": "The entity type, the custom field is assigned to",
@@ -18,6 +23,7 @@
     }
   },
   "required": [
+    "fieldId",
     "entityType",
     "count"
   ]

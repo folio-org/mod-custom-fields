@@ -13,7 +13,7 @@ import org.folio.common.OkapiParams;
 import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.service.exc.ServiceExceptions;
 
 @Component
@@ -73,7 +73,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   @Override
-  public Future<CustomFieldStatisticCollection> retrieveStatistic(String id, String tenantId) {
+  public Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId) {
     return findById(id, tenantId)
       .compose(field -> recordService.retrieveStatistic(field, tenantId));
   }
