@@ -391,6 +391,36 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void deleteCustomFieldAndReorderLast() throws IOException, URISyntaxException {
+    final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder3.json"), SC_CREATED, USER8);
+
+    deleteWithNoContent(CUSTOM_FIELDS_PATH + "/" + customFieldOne.getId());
+
+    CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH).as(CustomFieldCollection.class);
+    assertEquals(2, fields.getCustomFields().size());
+    assertEquals(1, (int) fields.getCustomFields().get(0).getOrder());
+    assertEquals(2, (int) fields.getCustomFields().get(1).getOrder());
+  }
+
+  @Test
+  public void deleteCustomFieldAndReorderLast1212() throws IOException, URISyntaxException {
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder3.json"), SC_CREATED, USER8);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
+
+    deleteWithStatus(CUSTOM_FIELDS_PATH + "/11111111-2222-3333-a444-555555555555" , SC_NOT_FOUND);
+
+    CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH + "?query=cql.allRecords=1 sortby order").as(CustomFieldCollection.class);
+    assertEquals(3, fields.getCustomFields().size());
+    assertEquals(1, (int) fields.getCustomFields().get(0).getOrder());
+    assertEquals(2, (int) fields.getCustomFields().get(1).getOrder());
+    assertEquals(3, (int) fields.getCustomFields().get(2).getOrder());
+  }
+
+  @Test
   public void shouldReturn404WhenDeleteRequestHasNotExistingUUID() {
     deleteWithStatus(CUSTOM_FIELDS_PATH + "/11111111-2222-3333-a444-555555555555", SC_NOT_FOUND);
   }
@@ -410,7 +440,7 @@ public class CustomFieldsImplTest extends TestBase {
     deleteWithNoContent(CUSTOM_FIELDS_PATH + "/" + customFieldOne.getId());
 
     final CustomField customFieldThree =
-      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder3.json"), SC_CREATED, USER8)
         .as(CustomField.class);
 
     assertTrue(customFieldThree.getRefId().endsWith("_3"));

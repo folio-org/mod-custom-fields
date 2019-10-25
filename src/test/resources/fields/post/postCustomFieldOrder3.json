@@ -1,0 +1,12 @@
+{
+  "name": "Department",
+  "type" : "TEXTBOX_SHORT",
+  "visible": true,
+  "required": true,
+  "entityType": "user",
+  "helpText": "Provide a login",
+  "textField": {
+    "maxSize": 32
+  },
+  "order": 3
+}

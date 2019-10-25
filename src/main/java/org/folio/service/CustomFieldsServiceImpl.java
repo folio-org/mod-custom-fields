@@ -6,7 +6,11 @@ import static io.vertx.core.Future.succeededFuture;
 import static org.folio.repository.CustomFieldsConstants.FIND_CF_BY_ORDER_QUERY;
 
 import java.text.Normalizer;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -78,7 +82,33 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return cf
       .compose(field -> recordService.deleteAllValues(field, tenantId))
       .compose(v -> repository.delete(id, tenantId))
-      .compose(deleted -> failIfNotFound(deleted, id));
+      .compose(deleted -> failIfNotFound(deleted, id))
+      .compose(v -> updateCustomFieldsOrder(tenantId));
+  }
+
+  private Future<Void> updateCustomFieldsOrder(String tenantId) {
+    final Future<Void> result = succeededFuture();
+    return result
+      .compose(v -> repository.findByQuery(null, 0, Integer.MAX_VALUE, tenantId)
+      .map(this::updateCustomFieldsOrder)
+      .compose(customFields -> updateCustomFields(customFields, tenantId)));
+  }
+
+  private Future<Void> updateCustomFields(List<CustomField> customFields, String tenantId) {
+    final List<Future> collect = customFields
+      .stream()
+      .map(customField -> repository.update(customField, tenantId))
+      .collect(Collectors.toList());
+    return CompositeFuture.all(collect).map((Void) null);
+  }
+
+  private List<CustomField> updateCustomFieldsOrder(CustomFieldCollection customFieldsCollection) {
+    final List<CustomField> customFields = customFieldsCollection.getCustomFields();
+    customFields.sort(Comparator.comparing(CustomField::getOrder));
+    for (int i = 0; i < customFields.size(); i++) {
+      customFields.get(i).setOrder(i + 1);
+    }
+    return customFields;
   }
 
   @Override
