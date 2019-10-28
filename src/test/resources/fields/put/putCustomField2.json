@@ -4,5 +4,6 @@
   "visible": true,
   "required": true,
   "entityType": "user",
-  "helpText": "Set expiration date"
+  "helpText": "Set expiration date",
+  "order": 1
 }

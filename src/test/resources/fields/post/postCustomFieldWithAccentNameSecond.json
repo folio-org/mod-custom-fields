@@ -1,10 +1,9 @@
 {
-  "name": "Department",
-  "type" : "SINGLE_CHECKBOX",
-  "refId": "not-null-ref-id",
+  "name": "Tĥïŝ ĩš â ťŕĭçķŷ Šťŕĭńġ",
   "visible": true,
   "required": true,
+  "type": "SINGLE_CHECKBOX",
   "entityType": "user",
   "helpText": "Provide a department",
-  "order": 1
+  "order": 2
 }

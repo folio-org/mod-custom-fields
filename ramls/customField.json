@@ -40,6 +40,11 @@
       "description": "Defines if the custom field is required",
       "example": true
     },
+    "order": {
+      "type": "integer",
+      "description": "Еhe order of the custom field to be displayed",
+      "example": 1
+    },
     "helpText": {
       "type": "string",
       "description": "The description of the custom field",
@@ -69,6 +74,7 @@
   "required": [
     "name",
     "type",
-    "entityType"
+    "entityType",
+    "order"
   ]
 }

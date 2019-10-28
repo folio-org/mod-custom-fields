@@ -138,4 +138,8 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
       .withCustomFields(results.getResults())
       .withTotalRecords(results.getResultInfo().getTotalRecords());
   }
+
+  private Long mapCount(ResultSet resultSet) {
+    return resultSet.getRows().get(0).getLong("count");
+  }
 }

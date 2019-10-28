@@ -3,6 +3,8 @@ package org.folio.service;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 
+import static org.folio.repository.CustomFieldsConstants.FIND_CF_BY_ORDER_QUERY;
+
 import java.text.Normalizer;
 
 import io.vertx.core.Future;
@@ -30,12 +32,19 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   public Future<CustomField> save(CustomField customField, OkapiParams params) {
     final String unAccentName = unAccentName(customField.getName());
 
-    return populateCreator(customField, params)
+    return checkOrderUniqueness(customField, params.getTenant())
+      .compose(o -> populateCreator(customField, params))
       .compose(o -> repository.maxRefId(unAccentName, params.getTenant()))
       .compose(maxCount -> {
         customField.setRefId(getCustomFieldId(unAccentName, maxCount));
         return repository.save(customField, params.getTenant());
       });
+  }
+
+  private Future<Void> checkOrderUniqueness(CustomField customField, String tenant) {
+    final String findCFByOrder = String.format(FIND_CF_BY_ORDER_QUERY, customField.getOrder());
+    return repository.findByQuery(findCFByOrder, 0, Integer.MAX_VALUE, tenant)
+      .compose(customFields ->  checkOrder(customFields.getCustomFields().size()));
   }
 
   @Override
@@ -109,5 +118,9 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private String getCustomFieldId(String id, Integer maxCount) {
     return id + "_" + (maxCount + 1);
+  }
+
+  private Future<Void> checkOrder(int count) {
+    return  count > 0 ? failedFuture(new IllegalArgumentException("Order number should be unique.")) : succeededFuture();
   }
 }
