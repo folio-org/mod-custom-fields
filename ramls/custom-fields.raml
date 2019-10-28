@@ -12,7 +12,7 @@ documentation:
 types:
   customFieldCollection: !include customFieldCollection.json
   customField: !include customField.json
-  customFieldStatisticCollection: !include customFieldStatisticCollection.json
+  customFieldStatistic: !include customFieldStatistic.json
   errors: !include raml-util/schemas/errors.schema
 
 traits:
@@ -24,7 +24,6 @@ traits:
 resourceTypes:
   collection: !include raml-util/rtypes/collection.raml
   collection-item: !include raml-util/rtypes/item-collection.raml
-  collection-readonly: !include raml-util/rtypes/get-only.raml
 
 
 /custom-fields:
@@ -52,8 +51,30 @@ resourceTypes:
         exampleItem: !include examples/customField.sample
     /stats:
       displayName: Custom field usage statistic
-      description: Returns usage statistic of custom field with the given id
-      type:
-        collection-readonly:
-          schema: customFieldStatisticCollection
-          exampleCollection: !include examples/customFieldStatisticCollection.sample
+      get:
+        description: Returns usage statistic of custom field with the given id
+        is: [language]
+        responses:
+          200:
+            description: "Returns statistic of custom field with the given id"
+            body:
+              application/json:
+                type: customFieldStatistic
+                example:
+                  strict: false
+                  value: !include examples/customFieldStatistic.sample
+          401:
+            description: "Not authorized to perform requested action"
+            body:
+              text/plain:
+                example: "Unable to get retrieve statistic -- unauthorized"
+          404:
+            description: "Custom field with the given id is not found"
+            body:
+              text/plain:
+                example: "Custom field not found"
+          500:
+            description: "Internal server error, e.g. due to misconfiguration"
+            body:
+              text/plain:
+                example: "Internal server error, contact administrator"

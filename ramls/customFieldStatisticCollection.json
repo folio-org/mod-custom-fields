@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "description": "Collection of custom field usage",
+  "description": "Collection of custom field usages",
   "additionalProperties": false,
   "properties": {
     "stats": {
       "type": "array",
-      "description": "An array of custom field usage statistic",
+      "description": "An array of custom field usage statistics",
       "items": {
         "type": "object",
         "$ref": "customFieldStatistic.json"
