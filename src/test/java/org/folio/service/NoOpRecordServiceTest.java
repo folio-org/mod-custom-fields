@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
-
 import io.vertx.core.Future;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -21,7 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 
 import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.test.junit.TestStartLoggingRule;
 
 public class NoOpRecordServiceTest {
@@ -63,13 +61,14 @@ public class NoOpRecordServiceTest {
 
   @Test
   public void shouldReturnEmptyStatistic() {
-    Future<CustomFieldStatisticCollection> stat = service.retrieveStatistic(field, tenantId);
+    Future<CustomFieldStatistic> stat = service.retrieveStatistic(field, tenantId);
 
     assertNotNull(stat);
     assertTrue(stat.succeeded());
-    assertEquals(stat.result(), new CustomFieldStatisticCollection()
-      .withStats(Collections.emptyList())
-      .withTotalRecords(0));
+    assertEquals(stat.result(), new CustomFieldStatistic()
+      .withFieldId(field.getId())
+      .withEntityType(field.getEntityType())
+      .withCount(0));
   }
 
   @Test

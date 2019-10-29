@@ -23,7 +23,6 @@ import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -37,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.rest.jaxrs.model.CustomFieldStatisticCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.folio.test.util.TestBase;
@@ -452,12 +451,13 @@ public class CustomFieldsImplTest extends TestBase {
     final CustomField field = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
       .as(CustomField.class);
 
-    CustomFieldStatisticCollection stats = getWithOk(
-      CUSTOM_FIELDS_PATH + "/" + field.getId() + "/stats").as(CustomFieldStatisticCollection.class);
+    CustomFieldStatistic stats = getWithOk(
+      CUSTOM_FIELDS_PATH + "/" + field.getId() + "/stats").as(CustomFieldStatistic.class);
 
-    assertEquals(stats, new CustomFieldStatisticCollection()
-      .withStats(Collections.emptyList())
-      .withTotalRecords(0));
+    assertEquals(stats, new CustomFieldStatistic()
+      .withFieldId(field.getId())
+      .withEntityType(field.getEntityType())
+      .withCount(0));
   }
 
   @Test
