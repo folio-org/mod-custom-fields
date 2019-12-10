@@ -15,11 +15,11 @@
   </licenses>
 
   <properties>
-    <raml-module-builder.version>27.0.0</raml-module-builder.version>
-    <vertx.version>3.5.4</vertx.version>
+    <raml-module-builder.version>29.1.1</raml-module-builder.version>
+    <vertx.version>3.8.4</vertx.version>
     <junit.version>4.12</junit.version>
     <rest-assured.version>3.3.0</rest-assured.version>
-    <folio-service-tools.version>1.2.0</folio-service-tools.version>
+    <folio-service-tools.version>1.3.0</folio-service-tools.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -256,12 +256,12 @@
           <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.8.9</version>
+            <version>1.9.4</version>
           </dependency>
           <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
-            <version>1.8.9</version>
+            <version>1.9.4</version>
           </dependency>
         </dependencies>
       </plugin>
