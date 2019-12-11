@@ -11,7 +11,9 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.CaseInsensitiveHeaders;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,11 +41,11 @@ public class UserService {
 
     final String tenantId = calculateTenantId(headers.get(OKAPI_HEADER_TENANT));
     final String userId = headers.get(OKAPI_USERID_HEADER);
-    Future<User> future = Future.future();
+    Promise<User> promise = Promise.promise();
     if (userId == null) {
       logger.error("No userid header");
-      future.fail(new BadRequestException("Missing user id header, cannot look up user"));
-      return future;
+      promise.fail(new BadRequestException("Missing user id header, cannot look up user"));
+      return promise.future();
     }
 
     String okapiURL = headers.get(XOkapiHeaders.URL);
@@ -69,16 +71,16 @@ public class UserService {
             httpClient.closeClient();
           }
         })
-        .thenAccept(future::complete)
+        .thenAccept(promise::complete)
         .exceptionally(e -> {
-          future.fail(e.getCause());
+          promise.fail(e.getCause());
           return null;
         });
     } catch (Exception e) {
       logger.error("Cannot get user data: " + e.getMessage(), e);
-      future.fail(e);
+      promise.fail(e);
     }
 
-    return future;
+    return promise.future();
   }
 }

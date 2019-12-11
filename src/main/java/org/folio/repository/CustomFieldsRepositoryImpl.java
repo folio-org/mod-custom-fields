@@ -8,12 +8,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -43,7 +45,7 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    */
   @Override
   public Future<CustomField> save(CustomField customField, String tenantId) {
-    Future<String> future = Future.future();
+    Promise<String> promise = Promise.promise();
     logger.debug("Saving a custom field with id: {}.", customField.getId());
 
 
@@ -51,9 +53,9 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
       customField.setId(UUID.randomUUID().toString());
     }
     PostgresClient.getInstance(vertx, tenantId)
-      .save(CUSTOM_FIELDS_TABLE,  customField.getId(), customField, future);
+      .save(CUSTOM_FIELDS_TABLE,  customField.getId(), customField, promise);
 
-    return future.map(id -> {
+    return promise.future().map(id -> {
       customField.setId(id);
       return customField;
     }).recover(excTranslator.translateOrPassBy());
@@ -67,12 +69,12 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    */
   @Override
   public Future<Optional<CustomField>> findById(String id, String tenantId) {
-    Future<CustomField> future = Future.future();
+    Promise<CustomField> promise = Promise.promise();
     logger.debug("Getting a custom field with id: {}.", id);
     PostgresClient.getInstance(vertx, tenantId)
-      .getById(CUSTOM_FIELDS_TABLE, id, CustomField.class, future);
+      .getById(CUSTOM_FIELDS_TABLE, id, CustomField.class, promise);
 
-    return future.map(Optional::ofNullable);
+    return promise.future().map(Optional::ofNullable);
   }
 
   /**
@@ -82,13 +84,13 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    */
   @Override
   public Future<Integer> maxRefId(String customFieldName, String tenantId) {
-    Future<ResultSet> future = Future.future();
+    Promise<ResultSet> promise = Promise.promise();
     final String query = String.format(SELECT_REF_IDS, getCFTableName(tenantId));
     String refIdRegex = String.format(REF_ID_REGEX, customFieldName);
     JsonArray parameters = new JsonArray().add(refIdRegex);
     logger.debug("Getting custom field ids by given name: {}.", customFieldName);
-    PostgresClient.getInstance(vertx, tenantId).select(query, parameters, future);
-    return future.map(this::mapMaxId);
+    PostgresClient.getInstance(vertx, tenantId).select(query, parameters, promise);
+    return promise.future().map(this::mapMaxId);
   }
 
   @Override
@@ -100,11 +102,11 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
 
   @Override
   public Future<Boolean> update(CustomField entity, String tenantId) {
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
 
-    PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), future);
+    PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), promise);
 
-    return future.map(updateResult -> updateResult.getUpdated() == 1)
+    return promise.future().map(updateResult -> updateResult.getUpdated() == 1)
       .recover(excTranslator.translateOrPassBy());
   }
 
@@ -116,10 +118,10 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    */
   @Override
   public Future<Boolean> delete(String id, String tenantId) {
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     logger.debug("Deleting custom field by given id: {}.", id);
-    PostgresClient.getInstance(vertx, tenantId).delete(CUSTOM_FIELDS_TABLE, id, future);
-    return future.map(updateResult -> updateResult.getUpdated() == 1)
+    PostgresClient.getInstance(vertx, tenantId).delete(CUSTOM_FIELDS_TABLE, id, promise);
+    return promise.future().map(updateResult -> updateResult.getUpdated() == 1)
       .recover(excTranslator.translateOrPassBy());
   }
 
