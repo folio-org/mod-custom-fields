@@ -1,3 +1,6 @@
+## 1.0.3
+* upgrade to folio-service-tools 1.3.1
+
 ## 1.0.2
 * MODCFIELDS-29 Upgrade to RMB v29.1.1 
 
