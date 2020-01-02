@@ -2,18 +2,23 @@ package org.folio.repository;
 
 import static org.folio.repository.CustomFieldsConstants.CUSTOM_FIELDS_TABLE;
 import static org.folio.repository.CustomFieldsConstants.REF_ID_REGEX;
+import static org.folio.repository.CustomFieldsConstants.SELECT_MAX_ORDER;
 import static org.folio.repository.CustomFieldsConstants.SELECT_REF_IDS;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
 
 import org.apache.commons.lang.StringUtils;
@@ -25,6 +30,7 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.persist.Criteria.Criterion;
 import org.folio.rest.persist.interfaces.Results;
 
 @Component
@@ -37,6 +43,11 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
+  @Override
+  public Future<CustomField> save(CustomField customField, String tenantId) {
+    return save(customField, tenantId, null);
+  }
+
   /**
    * Saves a custom field to the database
    *
@@ -44,16 +55,18 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    * @param tenantId - tenant id
    */
   @Override
-  public Future<CustomField> save(CustomField customField, String tenantId) {
+  public Future<CustomField> save(CustomField customField, String tenantId, AsyncResult<SQLConnection> connection) {
     Promise<String> promise = Promise.promise();
+    setIdIfMissing(customField);
     logger.debug("Saving a custom field with id: {}.", customField.getId());
-
-
-    if (StringUtils.isBlank(customField.getId())) {
-      customField.setId(UUID.randomUUID().toString());
+    if(connection != null){
+      PostgresClient.getInstance(vertx, tenantId)
+        .save(connection, CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
     }
-    PostgresClient.getInstance(vertx, tenantId)
-      .save(CUSTOM_FIELDS_TABLE,  customField.getId(), customField, promise);
+    else {
+      PostgresClient.getInstance(vertx, tenantId)
+        .save(CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
+    }
 
     return promise.future().map(id -> {
       customField.setId(id);
@@ -83,14 +96,34 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    * @param tenantId - tenant id
    */
   @Override
-  public Future<Integer> maxRefId(String customFieldName, String tenantId) {
+  public Future<Integer> maxRefId(String customFieldName, String tenantId,
+                                  AsyncResult<SQLConnection> connection) {
     Promise<ResultSet> promise = Promise.promise();
     final String query = String.format(SELECT_REF_IDS, getCFTableName(tenantId));
     String refIdRegex = String.format(REF_ID_REGEX, customFieldName);
     JsonArray parameters = new JsonArray().add(refIdRegex);
     logger.debug("Getting custom field ids by given name: {}.", customFieldName);
-    PostgresClient.getInstance(vertx, tenantId).select(query, parameters, promise);
+    if (connection != null) {
+      PostgresClient.getInstance(vertx, tenantId).select(connection, query, parameters, promise);
+    }
+    else {
+      PostgresClient.getInstance(vertx, tenantId).select(query, parameters, promise);
+    }
     return promise.future().map(this::mapMaxId);
+  }
+
+  @Override
+  public Future<Integer> maxRefId(String customFieldName, String tenantId) {
+    return maxRefId(customFieldName, tenantId, null);
+  }
+
+  @Override
+  public Future<Integer> maxOrder(String tenantId) {
+    Promise<ResultSet> promise = Promise.promise();
+    final String query = String.format(SELECT_MAX_ORDER, getCFTableName(tenantId));
+    logger.debug("Getting maximum order of custom custom fields.");
+    PostgresClient.getInstance(vertx, tenantId).select(query, promise);
+    return promise.future().map(this::mapMaxOrder);
   }
 
   @Override
@@ -102,10 +135,20 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
 
   @Override
   public Future<Boolean> update(CustomField entity, String tenantId) {
+    return update(entity, tenantId, null);
+  }
+
+  @Override
+  public Future<Boolean> update(CustomField entity, String tenantId, AsyncResult<SQLConnection> connection) {
     Promise<UpdateResult> promise = Promise.promise();
 
-    PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), promise);
-
+    if(connection != null){
+      PostgresClient.getInstance(vertx, tenantId).update(connection, CUSTOM_FIELDS_TABLE, entity,
+        "jsonb", " WHERE id='" + entity.getId() + "'", false, promise);
+    }
+    else {
+      PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), promise);
+    }
     return promise.future().map(updateResult -> updateResult.getUpdated() == 1)
       .recover(excTranslator.translateOrPassBy());
   }
@@ -130,6 +173,18 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
       .map(row -> row.getString("values"))
       .mapToInt(value -> Integer.parseInt(value.substring(value.indexOf('_') + 1)))
       .max().orElse(0);
+  }
+
+  private Integer mapMaxOrder(ResultSet resultSet) {
+    List<JsonObject> rows = resultSet.getRows();
+    String maxOrder = rows.get(0).getString("max_order");
+    return maxOrder != null ? Integer.parseInt(maxOrder) : 0;
+  }
+
+  private void setIdIfMissing(CustomField customField) {
+    if (StringUtils.isBlank(customField.getId())) {
+      customField.setId(UUID.randomUUID().toString());
+    }
   }
 
   private String getCFTableName(String tenantId) {
