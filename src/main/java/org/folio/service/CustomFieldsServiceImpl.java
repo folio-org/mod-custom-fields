@@ -3,29 +3,33 @@ package org.folio.service;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 
+import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
+
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-
-import org.apache.commons.lang3.StringUtils;
-import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
 
-import org.folio.common.OkapiParams;
-import org.folio.repository.CustomFieldsRepository;
-import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.service.exc.ServiceExceptions;
+import com.google.common.collect.Sets;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.sql.SQLConnection;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.z3950.zing.cql.CQLDefaultNodeVisitor;
 import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLParseException;
@@ -33,7 +37,12 @@ import org.z3950.zing.cql.CQLParser;
 import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.ModifierSet;
 
-import io.vertx.ext.sql.SQLConnection;
+import org.folio.common.OkapiParams;
+import org.folio.repository.CustomFieldsRepository;
+import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.service.exc.ServiceExceptions;
 
 
 @Component
@@ -47,6 +56,8 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private UserService userService;
   @Autowired
   private RecordService recordService;
+  @Autowired
+  private Vertx vertx;
 
   @Override
   public Future<CustomField> save(CustomField customField, OkapiParams params) {
@@ -60,7 +71,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private Future<CustomField> save(CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
     return populateCreator(customField, params)
-      .compose(o -> repository.maxRefId(unAccentName, params.getTenant()))
+      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
       .compose(maxCount -> {
         customField.setRefId(getCustomFieldId(unAccentName, maxCount));
         return repository.save(customField, params.getTenant(), connection);
@@ -73,20 +84,20 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .compose(oldCustomField -> {
           Integer oldOrder = oldCustomField.orElseThrow(NotFoundException::new).getOrder();
           customField.setOrder(oldOrder);
-          return update(id, customField, params, null);
+          customField.setId(id);
+          return update(customField, params, null);
         });
   }
 
-  private Future<Void> update(String id, CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
-    customField.setId(id);
+  private Future<Void> update(CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
     return populateUpdater(customField, params)
-      .compose(o -> repository.maxRefId(unAccentName, params.getTenant()))
+      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
       .compose(maxCount -> {
         customField.setRefId(getCustomFieldId(unAccentName, maxCount));
         return repository.update(customField, params.getTenant(), connection);
       })
-      .compose(found -> failIfNotFound(found, id));
+      .compose(found -> failIfNotFound(found, customField.getId()));
   }
 
   @Override
@@ -110,6 +121,58 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .compose(deleted -> failIfNotFound(deleted, id))
       .compose(v -> updateCustomFieldsOrder(tenantId));
   }
+
+  @Override
+  public Future<List<CustomField>> replaceAll(List<CustomField> customFields, OkapiParams params) {
+    return repository.findByQuery(null, 0, Integer.MAX_VALUE, params.getTenant())
+      .compose(existingFields -> {
+        setOrder(customFields);
+        customFields.stream()
+          .filter(field -> StringUtils.isBlank(field.getId()))
+          .forEach(field -> field.setId(UUID.randomUUID().toString()));
+        Map<String, CustomField> newFieldsMap = createMapById(customFields);
+        Map<String, CustomField> existingFieldsMap = createMapById(existingFields.getCustomFields());
+
+        Set<String> fieldsToRemove = Sets.difference(existingFieldsMap.keySet(), newFieldsMap.keySet());
+        Set<String> fieldsToUpdate = Sets.intersection(existingFieldsMap.keySet(), newFieldsMap.keySet());
+        Set<String> fieldsToInsert = Sets.difference(newFieldsMap.keySet(), existingFieldsMap.keySet());
+
+        return executeInTransactionWithVertxFuture(params.getTenant(), vertx, (postgresClient, connection) ->
+          executeForEach(fieldsToRemove, id -> repository.delete(id, params.getTenant(), connection))
+            .compose(deleted ->
+              executeForEach(fieldsToUpdate, id -> update(newFieldsMap.get(id), params, connection)))
+            .compose(updateResult ->
+              executeForEach(fieldsToInsert, id -> save(newFieldsMap.get(id), params, connection)))
+        ).compose(o -> {
+          List<CustomField> deletedFields = fieldsToRemove.stream()
+            .map(existingFieldsMap::get)
+            .collect(Collectors.toList());
+          return executeForEach(deletedFields, field -> recordService.deleteAllValues(field, params.getTenant()));
+          }
+        )
+        .map(customFields);
+      });
+  }
+
+  private void setOrder(List<CustomField> customFields) {
+    for (int i = 0; i < customFields.size(); i++) {
+      customFields.get(i).setOrder(i + 1);
+    }
+  }
+
+  private Map<String, CustomField> createMapById(List<CustomField> customFields) {
+    return customFields.stream()
+      .collect(Collectors.toMap(CustomField::getId, Function.identity()));
+  }
+
+  private <T> Future<Void> executeForEach(Collection<T> collection, Function<T, Future<?>> action){
+    Future<?> resultFuture = Future.succeededFuture();
+    for (T item : collection) {
+      resultFuture =  resultFuture.compose(o -> action.apply(item));
+    }
+    return resultFuture.map(o -> null);
+  }
+
 
   private Future<Void> updateCustomFieldsOrder(String tenantId) {
     final Future<Void> result = succeededFuture();

@@ -1,5 +1,7 @@
 package org.folio.repository;
 
+import javax.annotation.Nullable;
+
 import static org.folio.repository.CustomFieldsConstants.CUSTOM_FIELDS_TABLE;
 import static org.folio.repository.CustomFieldsConstants.REF_ID_REGEX;
 import static org.folio.repository.CustomFieldsConstants.SELECT_MAX_ORDER;
@@ -30,7 +32,6 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.persist.Criteria.Criterion;
 import org.folio.rest.persist.interfaces.Results;
 
 @Component
@@ -55,17 +56,16 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    * @param tenantId - tenant id
    */
   @Override
-  public Future<CustomField> save(CustomField customField, String tenantId, AsyncResult<SQLConnection> connection) {
+  public Future<CustomField> save(CustomField customField, String tenantId, @Nullable AsyncResult<SQLConnection> connection) {
     Promise<String> promise = Promise.promise();
     setIdIfMissing(customField);
     logger.debug("Saving a custom field with id: {}.", customField.getId());
+    PostgresClient client = PostgresClient.getInstance(vertx, tenantId);
     if(connection != null){
-      PostgresClient.getInstance(vertx, tenantId)
-        .save(connection, CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
+      client.save(connection, CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
     }
     else {
-      PostgresClient.getInstance(vertx, tenantId)
-        .save(CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
+      client.save(CUSTOM_FIELDS_TABLE, customField.getId(), customField, promise);
     }
 
     return promise.future().map(id -> {
@@ -97,17 +97,18 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    */
   @Override
   public Future<Integer> maxRefId(String customFieldName, String tenantId,
-                                  AsyncResult<SQLConnection> connection) {
+                                  @Nullable AsyncResult<SQLConnection> connection) {
     Promise<ResultSet> promise = Promise.promise();
     final String query = String.format(SELECT_REF_IDS, getCFTableName(tenantId));
     String refIdRegex = String.format(REF_ID_REGEX, customFieldName);
     JsonArray parameters = new JsonArray().add(refIdRegex);
     logger.debug("Getting custom field ids by given name: {}.", customFieldName);
+    PostgresClient client = PostgresClient.getInstance(vertx, tenantId);
     if (connection != null) {
-      PostgresClient.getInstance(vertx, tenantId).select(connection, query, parameters, promise);
+      client.select(connection, query, parameters, promise);
     }
     else {
-      PostgresClient.getInstance(vertx, tenantId).select(query, parameters, promise);
+      client.select(query, parameters, promise);
     }
     return promise.future().map(this::mapMaxId);
   }
@@ -139,15 +140,16 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
   }
 
   @Override
-  public Future<Boolean> update(CustomField entity, String tenantId, AsyncResult<SQLConnection> connection) {
+  public Future<Boolean> update(CustomField entity, String tenantId, @Nullable AsyncResult<SQLConnection> connection) {
     Promise<UpdateResult> promise = Promise.promise();
 
+    PostgresClient client = PostgresClient.getInstance(vertx, tenantId);
     if(connection != null){
-      PostgresClient.getInstance(vertx, tenantId).update(connection, CUSTOM_FIELDS_TABLE, entity,
+      client.update(connection, CUSTOM_FIELDS_TABLE, entity,
         "jsonb", " WHERE id='" + entity.getId() + "'", false, promise);
     }
     else {
-      PostgresClient.getInstance(vertx, tenantId).update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), promise);
+      client.update(CUSTOM_FIELDS_TABLE, entity, entity.getId(), promise);
     }
     return promise.future().map(updateResult -> updateResult.getUpdated() == 1)
       .recover(excTranslator.translateOrPassBy());
@@ -160,12 +162,21 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
    * @param tenantId - tenant id
    */
   @Override
-  public Future<Boolean> delete(String id, String tenantId) {
+  public Future<Boolean> delete(String id, String tenantId, @Nullable AsyncResult<SQLConnection> connection) {
     Promise<UpdateResult> promise = Promise.promise();
     logger.debug("Deleting custom field by given id: {}.", id);
-    PostgresClient.getInstance(vertx, tenantId).delete(CUSTOM_FIELDS_TABLE, id, promise);
+    if(connection != null){
+      PostgresClient.getInstance(vertx, tenantId).delete(connection, CUSTOM_FIELDS_TABLE, id, promise);
+    }else {
+      PostgresClient.getInstance(vertx, tenantId).delete(CUSTOM_FIELDS_TABLE, id, promise);
+    }
     return promise.future().map(updateResult -> updateResult.getUpdated() == 1)
       .recover(excTranslator.translateOrPassBy());
+  }
+
+  @Override
+  public Future<Boolean> delete(String id, String tenantId) {
+    return delete(id, tenantId, null);
   }
 
   private Integer mapMaxId(ResultSet resultSet) {

@@ -1,5 +1,7 @@
 package org.folio.repository;
 
+import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 import io.vertx.core.AsyncResult;
@@ -17,7 +19,7 @@ public interface CustomFieldsRepository {
    */
   Future<CustomField> save(CustomField customField, String tenantId);
 
-  Future<CustomField> save(CustomField customField, String tenantId, AsyncResult<SQLConnection> connection);
+  Future<CustomField> save(CustomField customField, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
 
   /**
    * Returns custom field with given id.
@@ -31,7 +33,7 @@ public interface CustomFieldsRepository {
   Future<Integer> maxRefId(String customFieldName, String tenantId);
 
   Future<Integer> maxRefId(String customFieldName, String tenantId,
-                           AsyncResult<SQLConnection> connection);
+                           @Nullable AsyncResult<SQLConnection> connection);
 
   /**
    * Returns maximum value of "order" attribute in all custom fields,
@@ -46,10 +48,12 @@ public interface CustomFieldsRepository {
 
   Future<Boolean> update(CustomField entity, String tenantId);
 
-  Future<Boolean> update(CustomField entity, String tenantId, AsyncResult<SQLConnection> connection);
+  Future<Boolean> update(CustomField entity, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
 
   /**
    * Deletes custom field with given id.
    */
   Future<Boolean> delete(String id, String tenantId);
+
+  Future<Boolean> delete(String id, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
 }

@@ -8,6 +8,7 @@ import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsRespons
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.respond201WithApplicationJson;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -17,6 +18,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.folio.rest.jaxrs.model.PutCustomFieldCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -54,6 +57,19 @@ public class CustomFieldsImpl implements CustomFields {
     definitionValidator.validate(entity);
     Future<CustomField> saved = customFieldsService.save(entity, new OkapiParams(okapiHeaders));
     respond(saved, customField -> respond201WithApplicationJson(customField, headersFor201()), asyncResultHandler, excHandler);
+  }
+
+  @Override
+  public void putCustomFields(PutCustomFieldCollection request, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    List<CustomField> customFields = request.getCustomFields();
+    customFields
+      .forEach(definitionValidator::validate);
+    customFields.forEach(field -> field.setMetadata(request.getMetadata()));
+    Future<CustomFieldCollection> updatedFields = customFieldsService.replaceAll(customFields, new OkapiParams(okapiHeaders))
+      .map(fields -> new CustomFieldCollection()
+        .withCustomFields(fields)
+        .withTotalRecords(fields.size()));
+    respond(updatedFields, fieldCollection -> PutCustomFieldsResponse.respond204(), asyncResultHandler, excHandler);
   }
 
   @Override

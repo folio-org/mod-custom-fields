@@ -9,26 +9,29 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.rest.impl.CustomFieldsDBTestUtil.saveCustomField;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Comparator;
+import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.http.Header;
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +40,6 @@ import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.folio.test.util.TestBase;
 
@@ -386,6 +388,49 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldUpdateAllCustomFields() throws IOException, URISyntaxException {
+    CustomField createdField = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+
+    CustomFieldCollection request = readJsonFile("fields/put/putCustomFieldCollection.json", CustomFieldCollection.class);
+    request.getCustomFields().get(0).setId(createdField.getId());
+    putWithNoContent(CUSTOM_FIELDS_PATH, Json.encode(request), USER9);
+
+    List<CustomField> customFields = CustomFieldsDBTestUtil.getAllCustomFields(vertx);
+    customFields
+      .sort(Comparator.comparing(CustomField::getOrder));
+    CustomField firstField = customFields.get(0);
+    assertEquals("Department 2", firstField.getName());
+    assertEquals("department-_1", firstField.getRefId());
+    assertEquals("Provide a second department", firstField.getHelpText());
+    assertEquals(false, firstField.getRequired());
+    assertEquals(false, firstField.getVisible());
+    assertEquals(1, (int) firstField.getOrder());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
+    final Metadata firstFieldMetadata = firstField.getMetadata();
+    assertEquals(USER8.getValue(), firstFieldMetadata.getCreatedByUserId());
+    assertEquals("m8", firstFieldMetadata.getCreatedByUsername());
+    assertEquals(USER9.getValue(), firstFieldMetadata.getUpdatedByUserId());
+    assertEquals("mockuser9", firstFieldMetadata.getUpdatedByUsername());
+
+    CustomField secondField = customFields.get(1);
+    assertEquals("New Expiration Date", secondField.getName());
+    assertEquals("new-expiration-date_1", secondField.getRefId());
+    assertEquals("Set new expiration date", secondField.getHelpText());
+    assertEquals(true, secondField.getRequired());
+    assertEquals(true, secondField.getVisible());
+    assertEquals(2, (int) secondField.getOrder());
+    assertEquals(CustomField.Type.TEXTBOX_SHORT, secondField.getType());
+    final Metadata secondFieldMetadata = secondField.getMetadata();
+    assertEquals(USER9.getValue(), secondFieldMetadata.getCreatedByUserId());
+    assertEquals("mockuser9", secondFieldMetadata.getCreatedByUsername());
+    assertEquals(USER9.getValue(), secondFieldMetadata.getUpdatedByUserId());
+    assertEquals("mockuser9", secondFieldMetadata.getUpdatedByUsername());
+  }
+
+  @Test
   public void deleteCustomFieldsById() throws IOException, URISyntaxException {
     final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
       .as(CustomField.class);
@@ -466,7 +511,7 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldFailWith404WhenStatsRequestedForNonExistingField() throws IOException, URISyntaxException {
+  public void shouldFailWith404WhenStatsRequestedForNonExistingField() {
     getWithStatus(CUSTOM_FIELDS_PATH + "/" + STUB_FIELD_ID + "/stats", SC_NOT_FOUND);
   }
 

@@ -7,6 +7,8 @@ import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 
+import java.util.List;
+
 public interface CustomFieldsService {
 
   /**
@@ -35,6 +37,17 @@ public interface CustomFieldsService {
    * Deletes custom field with given id.
    */
   Future<Void> delete(String id, String tenantId);
+
+  /**
+   * Replaces all existing custom fields with new collection of custom fields.
+   * If new collection has fields with ids that already exist then those fields will be updated,
+   * fields with ids that don't exist will be added,
+   * existing fields that are not present in new collection will be deleted
+   * @param newFields collection of new custom fields
+   * @param params OkapiParams
+   * @return updated collection of custom fields
+   */
+  Future<List<CustomField>> replaceAll(List<CustomField> newFields, OkapiParams params);
 
   Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId);
 }
