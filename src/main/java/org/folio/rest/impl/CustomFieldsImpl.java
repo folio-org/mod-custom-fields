@@ -1,8 +1,5 @@
 package org.folio.rest.impl;
 
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.core.Future.succeededFuture;
-
 import static org.folio.rest.ResponseHelper.respond;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.headersFor201;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.respond201WithApplicationJson;
@@ -104,9 +101,7 @@ public class CustomFieldsImpl implements CustomFields {
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     definitionValidator.validate(entity);
 
-    Future<Void> updated = customFieldsService.findById(id, tenantId(okapiHeaders))
-      .compose(customField -> checkType(entity, customField))
-      .compose(o -> customFieldsService.update(id, entity, new OkapiParams(okapiHeaders)));
+    Future<Void> updated = customFieldsService.update(id, entity, new OkapiParams(okapiHeaders));
     respond(updated, v -> PutCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }
 
@@ -117,11 +112,5 @@ public class CustomFieldsImpl implements CustomFields {
     Future<CustomFieldStatistic> stats = customFieldsService.retrieveStatistic(id, tenantId(okapiHeaders));
 
     respond(stats, GetCustomFieldsStatsByIdResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
-  }
-
-  private Future<Object> checkType(CustomField entity, CustomField customField) {
-    return !customField.getType().equals(entity.getType())
-      ? failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."))
-      : succeededFuture();
   }
 }

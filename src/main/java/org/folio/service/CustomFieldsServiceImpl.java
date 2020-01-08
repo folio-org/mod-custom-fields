@@ -80,18 +80,18 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   @Override
   public Future<Void> update(String id, CustomField customField, OkapiParams params) {
-    return repository.findById(id, params.getTenant())
+    return findById(id, params.getTenant())
       .compose(oldCustomField -> {
-          Integer oldOrder = oldCustomField.orElseThrow(NotFoundException::new).getOrder();
-          customField.setOrder(oldOrder);
+        customField.setOrder(oldCustomField.getOrder());
           customField.setId(id);
-          return update(customField, params, null);
+          return update(customField, oldCustomField, params, null);
         });
   }
 
-  private Future<Void> update(CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
+  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
-    return populateUpdater(customField, params)
+    return checkType(customField, oldCustomField)
+      .compose(o -> populateUpdater(customField, params))
       .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
       .compose(maxCount -> {
         customField.setRefId(getCustomFieldId(unAccentName, maxCount));
@@ -140,7 +140,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         return executeInTransactionWithVertxFuture(params.getTenant(), vertx, (postgresClient, connection) ->
           executeForEach(fieldsToRemove, id -> repository.delete(id, params.getTenant(), connection))
             .compose(deleted ->
-              executeForEach(fieldsToUpdate, id -> update(newFieldsMap.get(id), params, connection)))
+              executeForEach(fieldsToUpdate, id -> update(newFieldsMap.get(id), existingFieldsMap.get(id), params, connection)))
             .compose(updateResult ->
               executeForEach(fieldsToInsert, id -> save(newFieldsMap.get(id), params, connection)))
         ).compose(o -> {
@@ -238,6 +238,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return id + "_" + (maxCount + 1);
   }
 
+  private Future<Object> checkType(CustomField entity, CustomField customField) {
+    return !customField.getType().equals(entity.getType())
+      ? failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."))
+      : succeededFuture();
+  }
   /**
    * Adds "sortby order" part to cqlQuery, if query already has "sortby" part, then "order"
    * is added as second sort attribute
