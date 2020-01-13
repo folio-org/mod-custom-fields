@@ -1,13 +1,11 @@
 package org.folio.rest.impl;
 
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.core.Future.succeededFuture;
-
 import static org.folio.rest.ResponseHelper.respond;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.headersFor201;
 import static org.folio.rest.jaxrs.resource.CustomFields.PostCustomFieldsResponse.respond201WithApplicationJson;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -17,6 +15,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.folio.rest.jaxrs.model.PutCustomFieldCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -57,6 +57,19 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
+  public void putCustomFields(PutCustomFieldCollection request, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    List<CustomField> customFields = request.getCustomFields();
+    customFields
+      .forEach(definitionValidator::validate);
+    customFields.forEach(field -> field.setMetadata(request.getMetadata()));
+    Future<CustomFieldCollection> updatedFields = customFieldsService.replaceAll(customFields, new OkapiParams(okapiHeaders))
+      .map(fields -> new CustomFieldCollection()
+        .withCustomFields(fields)
+        .withTotalRecords(fields.size()));
+    respond(updatedFields, fieldCollection -> PutCustomFieldsResponse.respond204(), asyncResultHandler, excHandler);
+  }
+
+  @Override
   @Validate
   public void getCustomFields(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
@@ -88,9 +101,7 @@ public class CustomFieldsImpl implements CustomFields {
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     definitionValidator.validate(entity);
 
-    Future<Void> updated = customFieldsService.findById(id, tenantId(okapiHeaders))
-      .compose(customField -> checkType(entity, customField))
-      .compose(o -> customFieldsService.update(id, entity, new OkapiParams(okapiHeaders)));
+    Future<Void> updated = customFieldsService.update(id, entity, new OkapiParams(okapiHeaders));
     respond(updated, v -> PutCustomFieldsByIdResponse.respond204(), asyncResultHandler, excHandler);
   }
 
@@ -101,11 +112,5 @@ public class CustomFieldsImpl implements CustomFields {
     Future<CustomFieldStatistic> stats = customFieldsService.retrieveStatistic(id, tenantId(okapiHeaders));
 
     respond(stats, GetCustomFieldsStatsByIdResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
-  }
-
-  private Future<Object> checkType(CustomField entity, CustomField customField) {
-    return !customField.getType().equals(entity.getType())
-      ? failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."))
-      : succeededFuture();
   }
 }

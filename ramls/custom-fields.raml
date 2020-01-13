@@ -11,6 +11,7 @@ documentation:
 
 types:
   customFieldCollection: !include customFieldCollection.json
+  putCustomFieldCollection: !include putCustomFieldCollection.json
   customField: !include customField.json
   customFieldStatistic: !include customFieldStatistic.json
   errors: !include raml-util/schemas/errors.schema
@@ -36,6 +37,29 @@ resourceTypes:
       exampleItem: !include examples/customField.sample
   post:
     is: [ validate ]
+  put:
+    description: |
+      Update all custom fields and delete fields that are not mentioned in request
+    body:
+      application/json:
+        type: putCustomFieldCollection
+        example:
+          strict: false
+          value: !include examples/customFieldCollection.sample
+    responses:
+      204:
+        description: "All custom fields successfully updated"
+      400:
+        description: "Bad request, e.g. malformed request body or query parameter. Details of the error (e.g. name of the parameter or line/character number with malformed data) provided in the response."
+        body:
+          text/plain:
+            example: |
+              "unable to update /custom-fields -- malformed JSON at 13:4"
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "internal server error, contact administrator"
   get:
     is: [
       searchable: {description: "Query should contain custom field attributes", example: "name=department"},

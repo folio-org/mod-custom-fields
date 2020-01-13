@@ -1,8 +1,12 @@
 package org.folio.repository;
 
+import javax.annotation.Nullable;
+
 import java.util.Optional;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.ext.sql.SQLConnection;
 
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
@@ -15,6 +19,8 @@ public interface CustomFieldsRepository {
    */
   Future<CustomField> save(CustomField customField, String tenantId);
 
+  Future<CustomField> save(CustomField customField, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
+
   /**
    * Returns custom field with given id.
    * If custom field with given id doesn't exist then returns an empty Optional.
@@ -26,6 +32,15 @@ public interface CustomFieldsRepository {
    */
   Future<Integer> maxRefId(String customFieldName, String tenantId);
 
+  Future<Integer> maxRefId(String customFieldName, String tenantId,
+                           @Nullable AsyncResult<SQLConnection> connection);
+
+  /**
+   * Returns maximum value of "order" attribute in all custom fields,
+   * or 0 if there are no fields with "order" attribute
+   */
+  Future<Integer> maxOrder(String tenantId);
+
   /**
    * Returns custom fields that match specified CQL query
    */
@@ -33,8 +48,12 @@ public interface CustomFieldsRepository {
 
   Future<Boolean> update(CustomField entity, String tenantId);
 
+  Future<Boolean> update(CustomField entity, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
+
   /**
    * Deletes custom field with given id.
    */
   Future<Boolean> delete(String id, String tenantId);
+
+  Future<Boolean> delete(String id, String tenantId, @Nullable AsyncResult<SQLConnection> connection);
 }

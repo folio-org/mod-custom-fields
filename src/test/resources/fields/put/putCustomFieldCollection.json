@@ -1,0 +1,21 @@
+{
+  "customFields": [
+    {
+      "name": "Department 2",
+      "type" : "SINGLE_CHECKBOX",
+      "refId": "not-null-ref-id",
+      "visible": false,
+      "required": false,
+      "entityType": "user",
+      "helpText": "Provide a second department"
+    },
+    {
+      "name": "New Expiration Date",
+      "type" : "TEXTBOX_SHORT",
+      "visible": true,
+      "required": true,
+      "entityType": "package",
+      "helpText": "Set new expiration date"
+    }
+  ]
+}

@@ -9,26 +9,29 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.rest.impl.CustomFieldsDBTestUtil.saveCustomField;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Comparator;
+import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.http.Header;
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +40,6 @@ import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.folio.test.util.TestBase;
 
@@ -126,6 +128,18 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldCreateCustomFieldWithLastOrderOnPost() throws IOException, URISyntaxException {
+    final CustomField customField1 = postWithStatus(CUSTOM_FIELDS_PATH,
+      readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    final CustomField customField2 = postWithStatus(CUSTOM_FIELDS_PATH,
+      readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    assertEquals(1, (int) customField1.getOrder());
+    assertEquals(2, (int) customField2.getOrder());
+  }
+
+  @Test
   public void shouldNotCreateCustomFieldWhenNameIsTooLongOnPost() throws IOException, URISyntaxException {
     final String customField = readFile("fields/post/postCustomNameWithTooLongName.json");
     postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY, USER8);
@@ -182,19 +196,21 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldReturnAllFieldsOnGet() throws IOException, URISyntaxException {
+  public void shouldReturnAllFieldsOnGetSortedByOrder() throws IOException, URISyntaxException {
     createFields();
     CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH).as(CustomFieldCollection.class);
     assertEquals(2, fields.getCustomFields().size());
-    assertThat(fields.getCustomFields(), hasItem(allOf(
+    assertThat(fields.getCustomFields().get(0), is(allOf(
       hasProperty("name", is("Department")),
       hasProperty("helpText", is("Provide a department")),
-      hasProperty("entityType", is("user"))
+      hasProperty("entityType", is("user")),
+      hasProperty("order", is(1))
     )));
-    assertThat(fields.getCustomFields(), hasItem(allOf(
+    assertThat(fields.getCustomFields().get(1), is(allOf(
       hasProperty("name", is("Expiration Date")),
       hasProperty("helpText", is("Set expiration date")),
-      hasProperty("entityType", is("package"))
+      hasProperty("entityType", is("package")),
+      hasProperty("order", is(2))
     )));
   }
 
@@ -262,16 +278,6 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldReturn422ErrorWhenOrderIsInvalid() throws IOException, URISyntaxException {
-    String customFieldFile = readFile("fields/post/postCustomField.json");
-
-    postWithStatus(CUSTOM_FIELDS_PATH, customFieldFile, SC_CREATED, USER8);
-    final Error error = postWithStatus(CUSTOM_FIELDS_PATH, customFieldFile, SC_UNPROCESSABLE_ENTITY, USER8).as(Error.class);
-
-    assertEquals("Order number should be unique.", error.getMessage());
-  }
-
-  @Test
   public void shouldReturn404OnMissingId() {
     getWithStatus(CUSTOM_FIELDS_ID_PATH, SC_NOT_FOUND);
   }
@@ -306,6 +312,7 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals("Provide a second department", field.getHelpText());
     assertEquals(false, field.getRequired());
     assertEquals(false, field.getVisible());
+    assertEquals(1, (int) field.getOrder());
     assertEquals(CustomField.Type.SINGLE_CHECKBOX, field.getType());
 
     final Metadata noteTypeMetadata = field.getMetadata();
@@ -378,6 +385,49 @@ public class CustomFieldsImplTest extends TestBase {
 
     final String cfWithHalfName = readFile("fields/put/putCustomFieldEmptyEntityType.json");
     putWithStatus(CUSTOM_FIELDS_PATH + "/" + customField.getId(), cfWithHalfName, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldUpdateAllCustomFields() throws IOException, URISyntaxException {
+    CustomField createdField = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+
+    CustomFieldCollection request = readJsonFile("fields/put/putCustomFieldCollection.json", CustomFieldCollection.class);
+    request.getCustomFields().get(0).setId(createdField.getId());
+    putWithNoContent(CUSTOM_FIELDS_PATH, Json.encode(request), USER9);
+
+    List<CustomField> customFields = CustomFieldsDBTestUtil.getAllCustomFields(vertx);
+    customFields
+      .sort(Comparator.comparing(CustomField::getOrder));
+    CustomField firstField = customFields.get(0);
+    assertEquals("Department 2", firstField.getName());
+    assertEquals("department-_1", firstField.getRefId());
+    assertEquals("Provide a second department", firstField.getHelpText());
+    assertEquals(false, firstField.getRequired());
+    assertEquals(false, firstField.getVisible());
+    assertEquals(1, (int) firstField.getOrder());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
+    final Metadata firstFieldMetadata = firstField.getMetadata();
+    assertEquals(USER8.getValue(), firstFieldMetadata.getCreatedByUserId());
+    assertEquals("m8", firstFieldMetadata.getCreatedByUsername());
+    assertEquals(USER9.getValue(), firstFieldMetadata.getUpdatedByUserId());
+    assertEquals("mockuser9", firstFieldMetadata.getUpdatedByUsername());
+
+    CustomField secondField = customFields.get(1);
+    assertEquals("New Expiration Date", secondField.getName());
+    assertEquals("new-expiration-date_1", secondField.getRefId());
+    assertEquals("Set new expiration date", secondField.getHelpText());
+    assertEquals(true, secondField.getRequired());
+    assertEquals(true, secondField.getVisible());
+    assertEquals(2, (int) secondField.getOrder());
+    assertEquals(CustomField.Type.TEXTBOX_SHORT, secondField.getType());
+    final Metadata secondFieldMetadata = secondField.getMetadata();
+    assertEquals(USER9.getValue(), secondFieldMetadata.getCreatedByUserId());
+    assertEquals("mockuser9", secondFieldMetadata.getCreatedByUsername());
+    assertEquals(USER9.getValue(), secondFieldMetadata.getUpdatedByUserId());
+    assertEquals("mockuser9", secondFieldMetadata.getUpdatedByUsername());
   }
 
   @Test
@@ -461,14 +511,14 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldFailWith404WhenStatsRequestedForNonExistingField() throws IOException, URISyntaxException {
+  public void shouldFailWith404WhenStatsRequestedForNonExistingField() {
     getWithStatus(CUSTOM_FIELDS_PATH + "/" + STUB_FIELD_ID + "/stats", SC_NOT_FOUND);
   }
 
   private void createFields() throws IOException, URISyntaxException {
-    CustomField postField2 = readJsonFile("fields/post/postCustomField2.json", CustomField.class);
-    CustomField postField = readJsonFile("fields/post/postCustomField.json", CustomField.class);
-    saveCustomField(STUB_FIELD_ID, postField, vertx);
-    saveCustomField(STUB_FIELD_ID_2, postField2, vertx);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
+    postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
+      .as(CustomField.class);
   }
 }

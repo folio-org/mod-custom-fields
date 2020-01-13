@@ -42,8 +42,9 @@
     },
     "order": {
       "type": "integer",
-      "description": "Еhe order of the custom field to be displayed",
-      "example": 1
+      "description": "The order of the custom field to be displayed",
+      "example": 1,
+      "readonly" : true
     },
     "helpText": {
       "type": "string",
@@ -74,7 +75,6 @@
   "required": [
     "name",
     "type",
-    "entityType",
-    "order"
+    "entityType"
   ]
 }
