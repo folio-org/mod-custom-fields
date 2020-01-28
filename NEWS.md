@@ -1,3 +1,7 @@
+## 1.1.0
+* Add code owners
+* MODCFIELDS-27 Add PUT /custom-fields endpoint for updating all fields at once
+
 ## 1.0.3
 * upgrade to folio-service-tools 1.3.1
 
