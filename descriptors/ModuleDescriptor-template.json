@@ -5,7 +5,7 @@
   "provides": [
     {
       "id": "custom-fields",
-      "version": "1.1",
+      "version": "1.2",
       "handlers": [
         {
           "methods": ["GET"],
@@ -26,6 +26,11 @@
           "methods": ["PUT"],
           "pathPattern": "/custom-fields/{id}",
           "permissionsRequired": ["custom.fields.item.put"]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/custom-fields",
+          "permissionsRequired": ["custom.fields.collection.put"]
         },
         {
           "methods": ["DELETE"],
@@ -58,6 +63,11 @@
       "description": "Get Custom Fields collection"
     },
     {
+      "permissionName": "custom.fields.collection.put",
+      "displayName": "Custom Fields - put collection",
+      "description": "Put Custom Fields collection"
+    },
+    {
       "permissionName": "custom.fields.item.post",
       "displayName": "Custom Fields - create field",
       "description": "Create Custom Field"
@@ -88,6 +98,7 @@
       "description": "Entire set of permissions needed to use the custom fields module",
       "subPermissions": [
         "custom.fields.collection.get",
+        "custom.fields.collection.put",
         "custom.fields.item.post",
         "custom.fields.item.get",
         "custom.fields.item.put",
