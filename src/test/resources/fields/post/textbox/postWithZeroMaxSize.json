@@ -1,0 +1,11 @@
+{
+  "name": "Short Text box field",
+  "type": "TEXTBOX_SHORT",
+  "visible": true,
+  "required": true,
+  "entityType": "user",
+  "helpText": "Help text",
+  "textField": {
+    "maxSize" : 0
+  }
+}

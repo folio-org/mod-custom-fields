@@ -5,5 +5,8 @@
   "required": true,
   "entityType": "user",
   "helpText": "Set expiration date",
-  "order": 1
+  "order": 1,
+  "textField": {
+    "maxSize": 50
+  }
 }
