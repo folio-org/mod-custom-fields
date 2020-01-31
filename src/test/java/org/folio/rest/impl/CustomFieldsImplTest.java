@@ -164,6 +164,12 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldReturn422WhenMaxSizeIsNullOnPost() throws IOException, URISyntaxException {
+    final String customField = readFile("fields/post/postCustomFieldNullMaxSize.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
   public void shouldReturnErrorIfHelpTextTooLong() throws IOException, URISyntaxException {
     final String customField = readFile("fields/post/postCustomFieldHelpTextInvalid.json");
     postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);

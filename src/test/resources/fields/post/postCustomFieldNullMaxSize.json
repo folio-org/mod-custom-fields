@@ -1,0 +1,12 @@
+{
+  "name": "Expiration Date",
+  "type" : "TEXTBOX_SHORT",
+  "refId": "not-null-ref-id",
+  "visible": true,
+  "required": true,
+  "entityType": "package",
+  "helpText": "Set expiration date",
+  "order": 1,
+  "textField": {
+  }
+}

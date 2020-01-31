@@ -59,14 +59,6 @@ public class TextFieldDefinitionValidatorTest {
   }
 
   @Test
-  public void shouldReturnErrorIfMaxSizeValueNotDefined() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'maxSize' should not be null.");
-    CustomField customField = readJsonFile("fields/post/textbox/postWithMaxSizeNotDefined.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
   public void shouldReturnErrorIfMaxSizeIsNegative() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
     expectedEx.expectMessage("The value for 'maxSize' should be greater than 0.");
