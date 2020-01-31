@@ -6,5 +6,8 @@
   "required": true,
   "entityType": "user",
   "helpText": "Provide a department",
-  "order": 1
+  "order": 1,
+  "checkboxField": {
+    "default": true
+  }
 }

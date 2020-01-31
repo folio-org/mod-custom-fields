@@ -4,6 +4,5 @@
   "required": true,
   "type": "SINGLE_CHECKBOX",
   "entityType": "user",
-  "helpText": "Check if user is a student",
-  "checkboxField": {}
+  "helpText": "Check if user is a student"
 }

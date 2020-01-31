@@ -7,7 +7,10 @@
       "visible": false,
       "required": false,
       "entityType": "user",
-      "helpText": "Provide a second department"
+      "helpText": "Provide a second department",
+      "checkboxField": {
+        "default": true
+      }
     },
     {
       "name": "New Expiration Date",
@@ -15,7 +18,10 @@
       "visible": true,
       "required": true,
       "entityType": "package",
-      "helpText": "Set new expiration date"
+      "helpText": "Set new expiration date",
+      "textField": {
+        "maxSize": 50
+      }
     }
   ]
 }

@@ -4,5 +4,8 @@
   "required": true,
   "type": "SINGLE_CHECKBOX",
   "helpText": "Provide a department",
-  "order": 1
+  "order": 1,
+  "checkboxField": {
+    "default": true
+  }
 }

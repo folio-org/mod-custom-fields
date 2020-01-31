@@ -1,12 +1,12 @@
 {
-  "name": "Tĥïŝ12 ĩš?] â",
+  "name": "Is student",
   "visible": true,
   "required": true,
   "type": "SINGLE_CHECKBOX",
   "entityType": "user",
-  "helpText": "Provide a department",
-  "order": 2,
+  "helpText": "Check if user is a student",
   "checkboxField": {
     "default": true
-  }
+  },
+  "textField": {}
 }

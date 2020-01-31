@@ -5,5 +5,8 @@
   "type": "SINGLE_CHECKBOX",
   "entityType": "user",
   "helpText": "Provide a department",
-  "order": 2
+  "order": 2,
+  "checkboxField": {
+    "default": true
+  }
 }
