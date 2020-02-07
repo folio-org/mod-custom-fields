@@ -36,7 +36,7 @@ public class CheckboxDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfContainsNotAllowedFields() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("Attribute textField is not allowed");
+    expectedEx.expectMessage("Attribute selectField is not allowed");
     CustomField customField = readJsonFile("fields/post/checkbox/postWithNotAllowedFields.json", CustomField.class);
     validator.validateDefinition(customField);
   }

@@ -1,6 +1,5 @@
 {
   "name": "Short Text box field",
-  "type": "TEXTBOX_SHORT",
   "visible": true,
   "required": true,
   "entityType": "user",

@@ -5,8 +5,5 @@
   "visible": true,
   "required": true,
   "entityType": "user",
-  "helpText": "Set text",
-  "textField": {
-    "maxSize": 150
-  }
+  "helpText": "Set text"
 }

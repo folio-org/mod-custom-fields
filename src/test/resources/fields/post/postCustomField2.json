@@ -6,8 +6,5 @@
   "required": true,
   "entityType": "package",
   "helpText": "Set expiration date",
-  "order": 1,
-  "textField": {
-    "maxSize": 50
-  }
+  "order": 1
 }

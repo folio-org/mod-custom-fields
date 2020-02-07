@@ -21,9 +21,6 @@ public class AllowedFieldsConstants {
   public static final Set<String> CHECKBOX_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
     .addAll(COMMON_ALLOWED_FIELDS).add("checkboxField")
     .build();
-  public static final Set<String> TEXT_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
-    .addAll(COMMON_ALLOWED_FIELDS).add("textField")
-    .build();
   public static final Set<String> SELECT_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
     .addAll(COMMON_ALLOWED_FIELDS).add("selectField")
     .build();

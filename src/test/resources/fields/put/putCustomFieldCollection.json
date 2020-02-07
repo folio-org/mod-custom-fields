@@ -18,10 +18,7 @@
       "visible": true,
       "required": true,
       "entityType": "package",
-      "helpText": "Set new expiration date",
-      "textField": {
-        "maxSize": 50
-      }
+      "helpText": "Set new expiration date"
     }
   ]
 }

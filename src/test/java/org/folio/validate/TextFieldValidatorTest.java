@@ -6,33 +6,70 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.test.util.TestUtil;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.spring.TestConfiguration;
+import org.folio.test.util.TestUtil;
+
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = TestConfiguration.class)
 public class TextFieldValidatorTest {
+
+  @Autowired
+  private TextFieldValidator validator;
+
   @Test
-  public void shouldValidateWhenValueIsCorrect() throws IOException, URISyntaxException {
-    CustomField textboxField = getTextboxFieldDefinition();
-    String jsonValue = "\""  + StringUtils.repeat("*", textboxField.getTextField().getMaxSize()) + "\"";
-    new TextFieldValidator().validate(parseCustomFieldJsonValue(jsonValue), textboxField);
+  public void shouldValidateWhenShortTextBoxValueIsCorrect() throws IOException, URISyntaxException {
+    CustomField shortTextboxField = getShortTextboxFieldDefinition();
+    String jsonValue = "\""  + StringUtils.repeat("*", 10) + "\"";
+    validator.validate(parseCustomFieldJsonValue(jsonValue), shortTextboxField);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenValueIsTooLong() throws IOException, URISyntaxException {
-    CustomField textboxField = getTextboxFieldDefinition();
-    String jsonValue = "\""  + StringUtils.repeat("*", textboxField.getTextField().getMaxSize() + 1) + "\"";
-    new TextFieldValidator().validate(parseCustomFieldJsonValue(jsonValue), textboxField);
+  public void shouldThrowExceptionWhenShortTextBoxValueIsTooLong() throws IOException, URISyntaxException {
+    CustomField shortTextboxField = getShortTextboxFieldDefinition();
+    String jsonValue = "\""  + StringUtils.repeat("*", 16) + "\"";
+    validator.validate(parseCustomFieldJsonValue(jsonValue), shortTextboxField);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenValueIsNotString() throws IOException, URISyntaxException {
-    CustomField textboxField = getTextboxFieldDefinition();
+  public void shouldThrowExceptionWhenShortTextBoxValueIsNotString() throws IOException, URISyntaxException {
+    CustomField shortTextboxField = getShortTextboxFieldDefinition();
     String jsonValue = "100";
-    new TextFieldValidator().validate(parseCustomFieldJsonValue(jsonValue), textboxField);
+    validator.validate(parseCustomFieldJsonValue(jsonValue), shortTextboxField);
   }
 
-  private CustomField getTextboxFieldDefinition() throws IOException, URISyntaxException {
+  @Test
+  public void shouldValidateWhenLongTextBoxValueIsCorrect() throws IOException, URISyntaxException {
+    CustomField longTextboxField = getLongTextboxFieldDefinition();
+    String jsonValue = "\""  + StringUtils.repeat("*", 10) + "\"";
+    validator.validate(parseCustomFieldJsonValue(jsonValue), longTextboxField);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowExceptionWhenLongTextBoxValueIsTooLong() throws IOException, URISyntaxException {
+    CustomField longTextboxField = getLongTextboxFieldDefinition();
+    String jsonValue = "\""  + StringUtils.repeat("*", 101) + "\"";
+    validator.validate(parseCustomFieldJsonValue(jsonValue), longTextboxField);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowExceptionWhenLongTextBoxValueIsNotString() throws IOException, URISyntaxException {
+    CustomField longTextboxField = getLongTextboxFieldDefinition();
+    String jsonValue = "100";
+    validator.validate(parseCustomFieldJsonValue(jsonValue), longTextboxField);
+  }
+
+  private CustomField getShortTextboxFieldDefinition() throws IOException, URISyntaxException {
     return TestUtil.readJsonFile("fields/model/shortTextBoxField.json", CustomField.class);
+  }
+
+  private CustomField getLongTextboxFieldDefinition() throws IOException, URISyntaxException {
+    return TestUtil.readJsonFile("fields/model/longTextBoxField.json", CustomField.class);
   }
 }

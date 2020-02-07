@@ -12,7 +12,7 @@ import org.folio.rest.jaxrs.model.CustomField;
 public class RadioButtonValidator extends SelectableField implements Validatable {
 
   @Value("${custom.fields.definition.radio.button.option.size.max}")
-  private int RADIO_BUTTON_OPTION_SIZE_MAX;
+  private int radioButtonOptionsSizeMax;
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
@@ -20,7 +20,7 @@ public class RadioButtonValidator extends SelectableField implements Validatable
     validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
     validateSingleDefaultSize(fieldDefinition);
-    validateOptions(fieldDefinition, RADIO_BUTTON_OPTION_SIZE_MAX);
+    validateOptions(fieldDefinition, radioButtonOptionsSizeMax);
     validateMultiSelectProperty(fieldDefinition, false);
   }
 
