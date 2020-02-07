@@ -8,5 +8,5 @@
   "checkboxField": {
     "default": true
   },
-  "textField": {}
+  "selectField": {}
 }

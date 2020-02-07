@@ -51,11 +51,6 @@
       "description": "The description of the custom field",
       "example": "Provide a department"
     },
-    "textField": {
-      "type": "object",
-      "description": "Text field properties",
-      "$ref": "textField.json"
-    },
     "checkboxField": {
       "type": "object",
       "description": "Checkbox field properties",

@@ -27,11 +27,9 @@ import java.util.List;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -160,12 +158,6 @@ public class CustomFieldsImplTest extends TestBase {
   @Test
   public void shouldReturn422WhenEntityTypeIsEmptyOnPost() throws IOException, URISyntaxException {
     final String customField = readFile("fields/post/postCustomFieldEmptyEntityType.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
-  }
-
-  @Test
-  public void shouldReturn422WhenMaxSizeIsNullOnPost() throws IOException, URISyntaxException {
-    final String customField = readFile("fields/post/postCustomFieldNullMaxSize.json");
     postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNPROCESSABLE_ENTITY);
   }
 

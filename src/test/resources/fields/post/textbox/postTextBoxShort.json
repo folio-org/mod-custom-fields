@@ -4,8 +4,5 @@
   "visible": true,
   "required": true,
   "entityType": "user",
-  "helpText": "Help text",
-  "textField": {
-    "maxSize" : 10
-  }
+  "helpText": "Help text"
 }
