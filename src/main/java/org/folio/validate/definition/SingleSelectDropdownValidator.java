@@ -12,7 +12,7 @@ import org.folio.rest.jaxrs.model.CustomField;
 public class SingleSelectDropdownValidator extends SelectableField implements Validatable {
 
   @Value("${custom.fields.definition.dropdown.option.size.max}")
-  private int SINGLE_SELECT_OPTION_SIZE_MAX;
+  private int singleSelectOptionsMaxSize;
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
@@ -20,7 +20,7 @@ public class SingleSelectDropdownValidator extends SelectableField implements Va
     validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
     validateSingleDefaultSize(fieldDefinition);
-    validateOptions(fieldDefinition, SINGLE_SELECT_OPTION_SIZE_MAX);
+    validateOptions(fieldDefinition, singleSelectOptionsMaxSize);
     validateMultiSelectProperty(fieldDefinition, false);
   }
 

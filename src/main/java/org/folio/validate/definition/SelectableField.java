@@ -14,7 +14,7 @@ import org.folio.rest.jaxrs.model.SelectField;
 public abstract class SelectableField {
 
   @Value("${custom.fields.option.name.length}")
-  private int NAME_LENGTH_LIMIT;
+  private int nameLengthLimit;
 
   void validateOptions(CustomField fieldDefinition, int maxSize) {
     final SelectField selectField = fieldDefinition.getSelectField();
@@ -25,8 +25,8 @@ public abstract class SelectableField {
       Validate.isTrue(values.size() <= maxSize,
         "The max option size for '" + fieldDefinition.getType() + "' custom field type is %s", maxSize);
 
-      Validate.isTrue(values.stream().allMatch(value -> StringUtils.isNotBlank(value) && value.length() <= NAME_LENGTH_LIMIT),
-        "The option name cannot be blank or have more than %s characters", NAME_LENGTH_LIMIT);
+      Validate.isTrue(values.stream().allMatch(value -> StringUtils.isNotBlank(value) && value.length() <= nameLengthLimit),
+        "The option name cannot be blank or have more than %s characters", nameLengthLimit);
     }
   }
 

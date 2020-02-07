@@ -10,7 +10,7 @@ import org.folio.rest.jaxrs.model.CustomField;
 public class HelpTextValidator  implements Validatable {
 
   @Value("${custom.fields.definition.helpText.length}")
-  private int HELP_TEXT_LENGTH_LIMIT;
+  private int helpTextLengthLimit;
 
   /**
    * Validates the length of the custom field 'helpText' attribute
@@ -19,8 +19,8 @@ public class HelpTextValidator  implements Validatable {
    */
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
-    Validate.isTrue(fieldDefinition.getHelpText().length() <= HELP_TEXT_LENGTH_LIMIT,
-      "The 'helpText' length cannot be more than %s",  HELP_TEXT_LENGTH_LIMIT);
+    Validate.isTrue(fieldDefinition.getHelpText().length() <= helpTextLengthLimit,
+      "The 'helpText' length cannot be more than %s", helpTextLengthLimit);
   }
 
   @Override

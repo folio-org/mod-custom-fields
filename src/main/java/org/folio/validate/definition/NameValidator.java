@@ -10,7 +10,7 @@ import org.folio.rest.jaxrs.model.CustomField;
 public class NameValidator implements Validatable {
 
   @Value("${custom.fields.definition.name.length}")
-  private int NAME_LENGTH_LIMIT;
+  private int nameLengthLimit;
 
   /**
    * Validates the length of the custom 'name' text attribute
@@ -19,8 +19,8 @@ public class NameValidator implements Validatable {
    */
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
-    Validate.isTrue(fieldDefinition.getName().length() <= NAME_LENGTH_LIMIT,
-      "The 'name' length cannot be more than %s", NAME_LENGTH_LIMIT);
+    Validate.isTrue(fieldDefinition.getName().length() <= nameLengthLimit,
+      "The 'name' length cannot be more than %s", nameLengthLimit);
   }
 
   @Override

@@ -15,19 +15,19 @@ public class TextFieldValidator implements CustomFieldValidator {
   private static final String MAXIMUM_LENGTH_MESSAGE = "Maximum length of this text field is %s";
 
   @Value("${custom.fields.value.textbox.short.length}")
-  private int TEXT_BOX_SHORT_LENGTH;
+  private int textBoxShortLengthLimit;
 
   @Value("${custom.fields.value.textbox.long.length}")
-  private int TEXT_BOX_LONG_LENGTH;
+  private int textBoxLongLengthLimit;
 
   @Override
   public void validate(Object fieldValue, CustomField fieldDefinition) {
     Validate.isInstanceOf(String.class, fieldValue, "Text field must be a string");
     final int textFieldValueLength = fieldValue.toString().length();
     if(CustomField.Type.TEXTBOX_LONG.equals(fieldDefinition.getType())){
-      Validate.isTrue(textFieldValueLength <= TEXT_BOX_LONG_LENGTH, MAXIMUM_LENGTH_MESSAGE, TEXT_BOX_LONG_LENGTH);
+      Validate.isTrue(textFieldValueLength <= textBoxLongLengthLimit, MAXIMUM_LENGTH_MESSAGE, textBoxLongLengthLimit);
     } else {
-      Validate.isTrue(textFieldValueLength <= TEXT_BOX_SHORT_LENGTH, MAXIMUM_LENGTH_MESSAGE, TEXT_BOX_SHORT_LENGTH);
+      Validate.isTrue(textFieldValueLength <= textBoxShortLengthLimit, MAXIMUM_LENGTH_MESSAGE, textBoxShortLengthLimit);
     }
   }
 

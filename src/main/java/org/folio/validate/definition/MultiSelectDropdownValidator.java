@@ -12,14 +12,14 @@ import org.folio.rest.jaxrs.model.CustomField;
 public class MultiSelectDropdownValidator extends SelectableField implements Validatable {
 
   @Value("${custom.fields.definition.dropdown.option.size.max}")
-  private int MULTI_SELECT_OPTION_SIZE_MAX;
+  private int multiSelectOptionsMaxSize;
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
     CustomDefinitionValidationUtil.onlyHasAllowedFields(fieldDefinition, SELECT_ALLOWED_FIELDS);
     validateSelectFieldDefined(fieldDefinition);
     validateDefaults(fieldDefinition);
-    validateOptions(fieldDefinition, MULTI_SELECT_OPTION_SIZE_MAX);
+    validateOptions(fieldDefinition, multiSelectOptionsMaxSize);
     validateMultiSelectProperty(fieldDefinition, true);
   }
 

@@ -4,13 +4,12 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.folio.rest.jaxrs.model.CustomField;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
+import org.folio.rest.jaxrs.model.CustomField;
 
 
 public class CustomDefinitionValidationUtil {
