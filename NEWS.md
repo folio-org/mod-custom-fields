@@ -1,3 +1,7 @@
+## 1.2.0
+* MODCFIELDS-15 Custom Fields: Text field/area Values Validation
+* MODCFIELDS-36 Text field can be created without requried "textField" attribute
+
 ## 1.1.1
 * MODCFIELDS-27 Add PUT /custom-fields endpoint for updating all fields at once
 
