@@ -4,6 +4,7 @@ import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 
 import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
+import static org.folio.rest.validate.ValidationMethods.validateEquals;
 
 import java.io.IOException;
 import java.text.Normalizer;
@@ -13,20 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.NotFoundException;
 
 import com.google.common.collect.Sets;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.sql.SQLConnection;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,6 +41,7 @@ import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.validate.Validation;
 import org.folio.service.exc.ServiceExceptions;
 
 
@@ -88,16 +88,30 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         });
   }
 
-  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
-    final String unAccentName = unAccentName(customField.getName());
-    return checkType(customField, oldCustomField)
+  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
+      @Nullable AsyncResult<SQLConnection> connection) {
+
+    Future<Void> validated = Validation.instance()
+      .addTest(customField.getType(), validateTypes(oldCustomField.getType()))
+      .addTest(customField.getRefId(), validateRefIds(oldCustomField.getRefId()))
+      .validate();
+
+    return validated
       .compose(o -> populateUpdater(customField, params))
-      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
-      .compose(maxCount -> {
-        customField.setRefId(getCustomFieldId(unAccentName, maxCount));
-        return repository.update(customField, params.getTenant(), connection);
-      })
+      .compose(o -> repository.update(customField, params.getTenant(), connection))
       .compose(found -> failIfNotFound(found, customField.getId()));
+  }
+
+  private Consumer<String> validateRefIds(String oldRefId) {
+    return refId -> validateEquals(oldRefId,
+        "RefId of the custom field can not be changed: newRefId = %s, oldRefId = %s", refId, oldRefId)
+      .accept(refId);
+  }
+
+  private Consumer<CustomField.Type> validateTypes(CustomField.Type oldType) {
+    return type -> validateEquals(oldType,
+        "The type of the custom field can not be changed: newType = %s, oldType = %s", type, oldType)
+      .accept(type);
   }
 
   @Override
