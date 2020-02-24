@@ -12,7 +12,10 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.folio.rest.jaxrs.model.CustomField;
 
 
-public class CustomDefinitionValidationUtil {
+class CustomDefinitionValidationUtil {
+
+  private CustomDefinitionValidationUtil() {
+  }
 
   /**
    * Throws exception if customField has non-null fields that are not in allowedFields collection

@@ -7,28 +7,44 @@ import static org.folio.rest.exc.ExceptionPredicates.instanceOf;
 
 import javax.ws.rs.core.Response;
 
+import com.google.gson.Gson;
+
 import org.folio.common.pf.PartialFunction;
 import org.folio.rest.ResponseHelper;
 import org.folio.rest.jaxrs.model.Error;
+import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.validate.ValidationUtil;
 
-public class CustomFieldOrderExceptionHandler {
+public class CustomFieldExceptionHandlers {
 
-  private CustomFieldOrderExceptionHandler() {}
+  private CustomFieldExceptionHandlers() {
+  }
 
-  public static PartialFunction<Throwable, Response> customFieldOrderValidationHandler() {
+  public static PartialFunction<Throwable, Response> invalidOrderHandler() {
     return pf(instanceOf(IllegalArgumentException.class)
         .and(throwable -> {
           IllegalArgumentException exc = (IllegalArgumentException) throwable;
           return "Order number should be unique.".equals(exc.getMessage());
         })
-      , CustomFieldOrderExceptionHandler::toUnprocessableEntity);
+      , CustomFieldExceptionHandlers::invalidOrderToUnprocessable);
   }
 
-  private static Response toUnprocessableEntity(Throwable t) {
+  public static PartialFunction<Throwable, Response> invalidValueHandler() {
+    return pf(instanceOf(InvalidFieldValueException.class), CustomFieldExceptionHandlers::invalidValueToUnprocessable);
+  }
+
+  private static Response invalidOrderToUnprocessable(Throwable t) {
     IllegalArgumentException exc = (IllegalArgumentException) t;
     final Error errorMessage = ValidationUtil.createError(
       null, null, exc.getMessage());
     return ResponseHelper.statusWithJson(SC_UNPROCESSABLE_ENTITY, errorMessage);
+  }
+
+  private static Response invalidValueToUnprocessable(Throwable t) {
+    InvalidFieldValueException exc = (InvalidFieldValueException) t;
+
+    Error error = ValidationUtil.createError(new Gson().toJson(exc.getValue()), exc.getField(), exc.getMessage());
+
+    return ResponseHelper.statusWithJson(SC_UNPROCESSABLE_ENTITY, error);
   }
 }

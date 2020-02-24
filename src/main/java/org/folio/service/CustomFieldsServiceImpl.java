@@ -2,6 +2,7 @@ package org.folio.service;
 
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
+import static java.lang.String.format;
 
 import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
 
@@ -11,22 +12,21 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.NotFoundException;
 
 import com.google.common.collect.Sets;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.sql.SQLConnection;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,6 +42,8 @@ import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.validate.Validation;
+import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.service.exc.ServiceExceptions;
 
 
@@ -73,7 +75,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return populateCreator(customField, params)
       .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
       .compose(maxCount -> {
-        customField.setRefId(getCustomFieldId(unAccentName, maxCount));
+        customField.setRefId(getCustomFieldRefId(unAccentName, maxCount));
         return repository.save(customField, params.getTenant(), connection);
       });
   }
@@ -83,21 +85,36 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return findById(id, params.getTenant())
       .compose(oldCustomField -> {
         customField.setOrder(oldCustomField.getOrder());
-          customField.setId(id);
-          return update(customField, oldCustomField, params, null);
-        });
+
+        return update(customField, oldCustomField, params, null);
+      });
   }
 
-  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
-    final String unAccentName = unAccentName(customField.getName());
-    return checkType(customField, oldCustomField)
+  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
+      @Nullable AsyncResult<SQLConnection> connection) {
+    customField.setId(oldCustomField.getId());
+    customField.setRefId(oldCustomField.getRefId());
+
+    Future<Void> validated = Validation.instance()
+      .addTest(customField.getType(), typeNotChanged(oldCustomField.getType()))
+      .validate();
+
+    return validated
       .compose(o -> populateUpdater(customField, params))
-      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
-      .compose(maxCount -> {
-        customField.setRefId(getCustomFieldId(unAccentName, maxCount));
-        return repository.update(customField, params.getTenant(), connection);
-      })
+      .compose(o -> repository.update(customField, params.getTenant(), connection))
       .compose(found -> failIfNotFound(found, customField.getId()));
+  }
+
+  private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
+    return type -> validateValueNotChanged("type", type, oldType,
+      "The type of the custom field can not be changed: newType = %s, oldType = %s", type, oldType);
+  }
+
+  private static  <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message,
+      Object... values) {
+    if (!Objects.equals(newValue, oldValue)) {
+      throw new InvalidFieldValueException(field, newValue, format(message, values));
+    }
   }
 
   @Override
@@ -234,7 +251,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .replaceAll("\\s+", "-").toLowerCase();
   }
 
-  private String getCustomFieldId(String id, Integer maxCount) {
+  private String getCustomFieldRefId(String id, Integer maxCount) {
     return id + "_" + (maxCount + 1);
   }
 
@@ -270,7 +287,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     }
   }
 
-  private class SortVisitor extends CQLDefaultNodeVisitor{
+  private static class SortVisitor extends CQLDefaultNodeVisitor{
     private CQLSortNode cqlSortNode;
     @Override
     public void onSortNode(CQLSortNode cqlSortNode) {
