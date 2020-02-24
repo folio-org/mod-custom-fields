@@ -7,8 +7,8 @@ import static org.folio.rest.exc.RestExceptionHandlers.baseUnprocessableHandler;
 import static org.folio.rest.exc.RestExceptionHandlers.completionCause;
 import static org.folio.rest.exc.RestExceptionHandlers.generalHandler;
 import static org.folio.rest.exc.RestExceptionHandlers.logged;
-import static org.folio.rest.exceptions.CustomFieldOrderExceptionHandler.customFieldOrderValidationHandler;
-import static org.folio.rest.exceptions.CustomFieldTypeExceptionHandler.customFieldTypeValidationHandler;
+import static org.folio.rest.exceptions.CustomFieldExceptionHandlers.invalidOrderHandler;
+import static org.folio.rest.exceptions.CustomFieldExceptionHandlers.invalidValueHandler;
 
 import java.util.Collection;
 
@@ -47,8 +47,8 @@ public class ApplicationConfig {
     return logged(baseBadRequestHandler()
       .orElse(baseNotFoundHandler())
       .orElse(baseUnauthorizedHandler())
-      .orElse(customFieldTypeValidationHandler())
-      .orElse(customFieldOrderValidationHandler())
+      .orElse(invalidValueHandler())
+      .orElse(invalidOrderHandler())
       .orElse(baseUnprocessableHandler())
       .orElse(generalHandler())
       .compose(completionCause()));

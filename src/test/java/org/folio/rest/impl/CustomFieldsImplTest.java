@@ -306,7 +306,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomField field = CustomFieldsDBTestUtil.getAllCustomFields(vertx).get(0);
     assertEquals("Department 2", field.getName());
-    assertEquals("department-_1", field.getRefId());
+    assertEquals("department_1", field.getRefId());
     assertEquals("Provide a second department", field.getHelpText());
     assertEquals(false, field.getRequired());
     assertEquals(false, field.getVisible());
@@ -401,7 +401,7 @@ public class CustomFieldsImplTest extends TestBase {
       .sort(Comparator.comparing(CustomField::getOrder));
     CustomField firstField = customFields.get(0);
     assertEquals("Department 2", firstField.getName());
-    assertEquals("department-_1", firstField.getRefId());
+    assertEquals("department_1", firstField.getRefId());
     assertEquals("Provide a second department", firstField.getHelpText());
     assertEquals(false, firstField.getRequired());
     assertEquals(false, firstField.getVisible());

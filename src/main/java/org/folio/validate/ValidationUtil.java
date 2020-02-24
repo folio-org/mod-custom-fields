@@ -4,6 +4,10 @@ import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Parameter;
 
 public class ValidationUtil {
+
+  private ValidationUtil() {
+  }
+
   public static Error createError(String value, String fieldName, String message) {
     Error error = new Error();
     Parameter p = new Parameter();
