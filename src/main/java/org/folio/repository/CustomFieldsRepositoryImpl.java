@@ -1,7 +1,5 @@
 package org.folio.repository;
 
-import javax.annotation.Nullable;
-
 import static org.folio.repository.CustomFieldsConstants.CUSTOM_FIELDS_TABLE;
 import static org.folio.repository.CustomFieldsConstants.REF_ID_REGEX;
 import static org.folio.repository.CustomFieldsConstants.SELECT_MAX_ORDER;
@@ -10,6 +8,8 @@ import static org.folio.repository.CustomFieldsConstants.SELECT_REF_IDS;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -22,7 +22,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -188,8 +187,8 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
 
   private Integer mapMaxOrder(ResultSet resultSet) {
     List<JsonObject> rows = resultSet.getRows();
-    String maxOrder = rows.get(0).getString("max_order");
-    return maxOrder != null ? Integer.parseInt(maxOrder) : 0;
+    Integer maxOrder = rows.get(0).getInteger("max_order");
+    return maxOrder != null ? maxOrder : 0;
   }
 
   private void setIdIfMissing(CustomField customField) {

@@ -8,7 +8,8 @@
     "default": {
       "type": "boolean",
       "description": "Defines if the custom field is default",
-      "example": false
+      "example": false,
+      "default": false
     }
   }
 }
