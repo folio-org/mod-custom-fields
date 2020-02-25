@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -42,6 +43,7 @@ import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.jaxrs.model.Options;
 import org.folio.rest.validate.Validation;
 import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.service.exc.ServiceExceptions;
@@ -66,8 +68,33 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return repository.maxOrder(params.getTenant())
       .compose(maxOrder -> {
         customField.setOrder(maxOrder + 1);
+        sortValues(customField);
         return save(customField, params, null);
       });
+  }
+
+  private void sortValues(CustomField customField) {
+    if(isSortableCustomFieldType(customField.getType())) {
+      final Options cfOptions = customField.getSelectField().getOptions();
+      final Optional<Options.SortingOrder> sortingOrder = Optional.ofNullable(cfOptions.getSortingOrder());
+      if (sortingOrder.isPresent()) {
+        switch (sortingOrder.get()) {
+          case ASC:
+            cfOptions.getValues().sort(Comparator.naturalOrder());
+            break;
+          case DESC:
+            cfOptions.getValues().sort(Comparator.reverseOrder());
+            break;
+          case CUSTOM:
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  private boolean isSortableCustomFieldType(CustomField.Type type){
+    return CustomField.Type.SINGLE_SELECT_DROPDOWN.equals(type) || CustomField.Type.MULTI_SELECT_DROPDOWN.equals(type);
   }
 
   private Future<CustomField> save(CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
