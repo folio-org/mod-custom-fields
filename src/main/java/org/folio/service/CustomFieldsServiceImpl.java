@@ -85,7 +85,6 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return findById(id, params.getTenant())
       .compose(oldCustomField -> {
         customField.setOrder(oldCustomField.getOrder());
-        sortValues(customField);
         return update(customField, oldCustomField, params, null);
       });
   }
@@ -94,6 +93,8 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       @Nullable AsyncResult<SQLConnection> connection) {
     customField.setId(oldCustomField.getId());
     customField.setRefId(oldCustomField.getRefId());
+
+    sortValues(customField);
 
     Future<Void> validated = Validation.instance()
       .addTest(customField.getType(), typeNotChanged(oldCustomField.getType()))
