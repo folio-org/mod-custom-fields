@@ -85,7 +85,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return findById(id, params.getTenant())
       .compose(oldCustomField -> {
         customField.setOrder(oldCustomField.getOrder());
-
+        sortValues(customField);
         return update(customField, oldCustomField, params, null);
       });
   }

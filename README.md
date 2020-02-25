@@ -13,7 +13,8 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
 ## Introduction
 
-FOLIO module to store and maintain custom fields.
+FOLIO module to store and maintain custom fields. The mod-custom-fields is designed to be a
+library that any module can add and use to store custom fields definitions as well as their values.
 
 The custom fields module implements a simple CRUD interface POST/PUT/GET/DELETE on /custom-fields and /custom-fields/$id. See the ramls/custom-fields.json for precise definitions.
 
@@ -24,11 +25,14 @@ The general design of the custom fields is following
 ![](images/custom-fields-design.png)
 
 The module has a common interface which can be used by several modules. 
-To define a particular module to calling to, define `X-Okapi-Module-Id` header, detailed information are able via the link to [Okapi documentation](https://github.com/folio-org/okapi/blob/master/doc/guide.md#multiple-interfaces).
+To define a particular module to be called to, define `X-Okapi-Module-Id` header, detailed information is able via the link to [Okapi documentation](https://github.com/folio-org/okapi/blob/master/doc/guide.md#multiple-interfaces).
+See an example of the request headers in Module deployment section with examples.
 
 ## Module Deployment
 
-The custom fields module can be added to any module by following steps:
+The custom fields functionality can be added to any module as a jar file
+The target module needs to carry out the following changes: 
+Please note that indicated module version and ModuleDescriptor.json file serve  
   1. Add maven dependency for `mod-custom-fields` in project pom file.
   Example:
    ~~~~
