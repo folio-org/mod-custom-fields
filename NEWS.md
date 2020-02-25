@@ -1,3 +1,7 @@
+## 1.3.0
+* Fix invalid jsonb order conversion
+* MODCFIELDS-40 Make RefId a read-only field
+
 ## 1.2.0
 * MODCFIELDS-15 Custom Fields: Text field/area Values Validation
 * MODCFIELDS-36 Text field can be created without requried "textField" attribute
