@@ -4,8 +4,9 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-public class AllowedFieldsConstants {
-  public static final Set<String> COMMON_ALLOWED_FIELDS = ImmutableSet.of(
+final class AllowedFieldsConstants {
+
+  static final Set<String> COMMON_ALLOWED_FIELDS = ImmutableSet.of(
     "id",
     "name",
     "refId",
@@ -13,17 +14,23 @@ public class AllowedFieldsConstants {
     "entityType",
     "visible",
     "required",
+    "isRepeatable",
     "order",
     "helpText",
     "metadata"
   );
 
-  public static final Set<String> CHECKBOX_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
+  static final Set<String> CHECKBOX_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
     .addAll(COMMON_ALLOWED_FIELDS).add("checkboxField")
     .build();
-  public static final Set<String> SELECT_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
+
+  static final Set<String> SELECT_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
     .addAll(COMMON_ALLOWED_FIELDS).add("selectField")
     .build();
+
+  private AllowedFieldsConstants() {
+
+  }
 
 }
 

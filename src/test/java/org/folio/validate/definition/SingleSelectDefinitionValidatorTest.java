@@ -17,10 +17,10 @@ import org.folio.test.util.TestUtil;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-public class SingleSelectDropdownValidatorTest {
+public class SingleSelectDefinitionValidatorTest {
 
   @Autowired
-  private SingleSelectDropdownValidator validator;
+  private SingleSelectDefinitionValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
