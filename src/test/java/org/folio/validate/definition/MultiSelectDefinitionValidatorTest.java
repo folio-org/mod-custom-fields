@@ -17,10 +17,10 @@ import org.folio.test.util.TestUtil;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-public class MultiSelectDropdownValidatorTest {
+public class MultiSelectDefinitionValidatorTest {
 
   @Autowired
-  private MultiSelectDropdownValidator validator;
+  private MultiSelectDefinitionValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 

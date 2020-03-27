@@ -43,6 +43,12 @@
       "default": false,
       "example": true
     },
+    "isRepeatable": {
+      "type": "boolean",
+      "description": "Defines if the custom field is repeatable",
+      "default": false,
+      "example": true
+    },
     "order": {
       "type": "integer",
       "description": "The order of the custom field to be displayed",

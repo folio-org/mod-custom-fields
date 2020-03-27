@@ -17,12 +17,12 @@ import org.folio.test.util.TestUtil;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
-public class RadioButtonValidatorTest {
+public class RadioButtonDefinitionValidatorTest {
 
-  @Autowired
-  private SingleSelectDropdownValidator validator;
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
+  @Autowired
+  private RadioButtonDefinitionValidator validator;
 
   @Test
   public void shouldReturnErrorIfIncorrectNumberOfOptions() throws IOException, URISyntaxException {
@@ -105,14 +105,14 @@ public class RadioButtonValidatorTest {
     validator.validateDefinition(customField);
   }
 
-  @Test(expected = Test.None.class)
+  @Test
   public void shouldNotReturnErrorIfDefaultIsNull() throws IOException, URISyntaxException {
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithDefaultIsNull.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
-  @Test(expected = Test.None.class)
+  @Test
   public void shouldNotReturnErrorIfDefaultValueIsEmpty() throws IOException, URISyntaxException {
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithDefaultsEmpty.json", CustomField.class);
