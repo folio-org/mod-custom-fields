@@ -6,6 +6,7 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,8 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.impl.DBTestUtil;
+import org.folio.rest.impl.CustomFieldsDBTestUtil;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Parameter;
 import org.folio.spring.SpringContextUtil;
@@ -36,7 +36,8 @@ import org.folio.test.util.TestBase;
 public class ValidationServiceImplTest extends TestBase {
 
   private static final String CUSTOM_FIELDS_PATH = "custom-fields";
-  private static final Header USER8 = new Header(XOkapiHeaders.USER_ID, "99999999-9999-4999-9999-999999999999");
+  private static final String USER8_ID = "88888888-8888-4888-8888-888888888888";
+  private static final Header USER8 = createTokenHeader("m8", USER8_ID);
 
   private ValidationService validationService;
 
@@ -47,7 +48,7 @@ public class ValidationServiceImplTest extends TestBase {
   public void setUp() throws IOException, URISyntaxException {
     SpringContextUtil.autowireDependenciesFromFirstContext(this, vertx);
     stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/99999999-9999-4999-9999-999999999999"), false))
+      get(new UrlPathPattern(new EqualToPattern("/users/88888888-8888-4888-8888-888888888888"), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(200)
           .withBody(readFile("users/mock_user.json"))
@@ -58,7 +59,7 @@ public class ValidationServiceImplTest extends TestBase {
 
   @After
   public void tearDown() {
-    DBTestUtil.deleteAllCustomFields(vertx);
+    CustomFieldsDBTestUtil.deleteAllCustomFields(vertx);
   }
 
   @Test
@@ -84,9 +85,9 @@ public class ValidationServiceImplTest extends TestBase {
     Async async = context.async();
     CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"table\"}", CustomFieldValue.class);
     validationService
-      .validateCustomFields( customFieldValue.getAdditionalProperties(), STUB_TENANT)
+      .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .otherwise(e -> {
-        if(!(e instanceof CustomFieldValidationException)){
+        if (!(e instanceof CustomFieldValidationException)) {
           context.fail(e);
           return null;
         }
@@ -107,7 +108,7 @@ public class ValidationServiceImplTest extends TestBase {
     validationService
       .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .otherwise(e -> {
-        if(!(e instanceof CustomFieldValidationException)){
+        if (!(e instanceof CustomFieldValidationException)) {
           context.fail(e);
           return null;
         }

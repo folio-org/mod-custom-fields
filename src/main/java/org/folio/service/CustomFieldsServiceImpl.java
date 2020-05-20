@@ -27,7 +27,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.ext.sql.SQLConnection;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,6 +43,7 @@ import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.Options;
+import org.folio.rest.persist.SQLConnection;
 import org.folio.rest.validate.Validation;
 import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.service.exc.ServiceExceptions;
@@ -54,6 +54,10 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private static final String ALL_RECORDS_QUERY = "cql.allRecords=1";
   private static final String ORDER_ATTRIBUTE = "order";
+  private static final String TYPE_ATTRIBUTE = "type";
+
+  private static final String TYPE_CHANGING_MESSAGE =
+    "The type of the custom field can not be changed: newType = %s, oldType = %s";
   @Autowired
   private CustomFieldsRepository repository;
   @Autowired
@@ -74,7 +78,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private void sortValues(CustomField customField) {
-    if(isSortableCustomFieldType(customField.getType())) {
+    if (isSortableCustomFieldType(customField.getType())) {
       final Options cfOptions = customField.getSelectField().getOptions();
       final Optional<Options.SortingOrder> sortingOrder = Optional.ofNullable(cfOptions.getSortingOrder());
       if (sortingOrder.isPresent()) {
@@ -93,16 +97,17 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     }
   }
 
-  private boolean isSortableCustomFieldType(CustomField.Type type){
+  private boolean isSortableCustomFieldType(CustomField.Type type) {
     return CustomField.Type.SINGLE_SELECT_DROPDOWN.equals(type) || CustomField.Type.MULTI_SELECT_DROPDOWN.equals(type);
   }
 
-  private Future<CustomField> save(CustomField customField, OkapiParams params, @Nullable AsyncResult<SQLConnection> connection) {
+  private Future<CustomField> save(CustomField customField, OkapiParams params,
+                                   @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
     return populateCreator(customField, params)
       .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
-      .compose(maxCount -> {
-        customField.setRefId(getCustomFieldRefId(unAccentName, maxCount));
+      .compose(maxRefId -> {
+        customField.setRefId(getCustomFieldRefId(unAccentName, maxRefId));
         return repository.save(customField, params.getTenant(), connection);
       });
   }
@@ -117,7 +122,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
-      @Nullable AsyncResult<SQLConnection> connection) {
+                              @Nullable AsyncResult<SQLConnection> connection) {
     customField.setId(oldCustomField.getId());
     customField.setRefId(oldCustomField.getRefId());
 
@@ -134,12 +139,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
-    return type -> validateValueNotChanged("type", type, oldType,
-      "The type of the custom field can not be changed: newType = %s, oldType = %s", type, oldType);
+    return type -> validateValueNotChanged(TYPE_ATTRIBUTE, type, oldType, TYPE_CHANGING_MESSAGE, type, oldType);
   }
 
-  private static  <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message,
-      Object... values) {
+  private static <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message,
+                                                  Object... values) {
     if (!Objects.equals(newValue, oldValue)) {
       throw new InvalidFieldValueException(field, newValue, format(message, values));
     }
@@ -185,17 +189,18 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         return executeInTransactionWithVertxFuture(params.getTenant(), vertx, (postgresClient, connection) ->
           executeForEach(fieldsToRemove, id -> repository.delete(id, params.getTenant(), connection))
             .compose(deleted ->
-              executeForEach(fieldsToUpdate, id -> update(newFieldsMap.get(id), existingFieldsMap.get(id), params, connection)))
+              executeForEach(fieldsToUpdate,
+                id -> update(newFieldsMap.get(id), existingFieldsMap.get(id), params, connection)))
             .compose(updateResult ->
               executeForEach(fieldsToInsert, id -> save(newFieldsMap.get(id), params, connection)))
         ).compose(o -> {
-          List<CustomField> deletedFields = fieldsToRemove.stream()
-            .map(existingFieldsMap::get)
-            .collect(Collectors.toList());
-          return executeForEach(deletedFields, field -> recordService.deleteAllValues(field, params.getTenant()));
+            List<CustomField> deletedFields = fieldsToRemove.stream()
+              .map(existingFieldsMap::get)
+              .collect(Collectors.toList());
+            return executeForEach(deletedFields, field -> recordService.deleteAllValues(field, params.getTenant()));
           }
         )
-        .map(customFields);
+          .map(customFields);
       });
   }
 
@@ -210,10 +215,10 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .collect(Collectors.toMap(CustomField::getId, Function.identity()));
   }
 
-  private <T> Future<Void> executeForEach(Collection<T> collection, Function<T, Future<?>> action){
+  private <T> Future<Void> executeForEach(Collection<T> collection, Function<T, Future<?>> action) {
     Future<?> resultFuture = Future.succeededFuture();
     for (T item : collection) {
-      resultFuture =  resultFuture.compose(o -> action.apply(item));
+      resultFuture = resultFuture.compose(o -> action.apply(item));
     }
     return resultFuture.map(o -> null);
   }
@@ -223,8 +228,8 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     final Future<Void> result = succeededFuture();
     return result
       .compose(v -> repository.findByQuery(null, 0, Integer.MAX_VALUE, tenantId)
-      .map(this::updateCustomFieldsOrder)
-      .compose(customFields -> updateCustomFields(customFields, tenantId)));
+        .map(this::updateCustomFieldsOrder)
+        .compose(customFields -> updateCustomFields(customFields, tenantId)));
   }
 
   private Future<Void> updateCustomFields(List<CustomField> customFields, String tenantId) {
@@ -255,7 +260,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private Future<Void> populateCreator(CustomField entity, OkapiParams params) {
-    return userService.getUserInfo(params.getHeadersAsMap()).map(user -> {
+    return userService.getUserInfo(params.getHeaders()).map(user -> {
       if (entity.getMetadata() != null) {
         entity.getMetadata().setCreatedByUsername(user.getUsername());
       }
@@ -264,7 +269,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private Future<Void> populateUpdater(CustomField entity, OkapiParams params) {
-    return userService.getUserInfo(params.getHeadersAsMap()).map(user -> {
+    return userService.getUserInfo(params.getHeaders()).map(user -> {
       if (entity.getMetadata() != null) {
         entity.getMetadata().setUpdatedByUsername(user.getUsername());
       }
@@ -279,18 +284,14 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       .replaceAll("\\s+", "-").toLowerCase();
   }
 
-  private String getCustomFieldRefId(String id, Integer maxCount) {
-    return id + "_" + (maxCount + 1);
+  private String getCustomFieldRefId(String id, Integer maxRefId) {
+    return id + "_" + (maxRefId + 1);
   }
 
-  private Future<Object> checkType(CustomField entity, CustomField customField) {
-    return !customField.getType().equals(entity.getType())
-      ? failedFuture(new IllegalArgumentException("The type of the custom field can not be changed."))
-      : succeededFuture();
-  }
   /**
    * Adds "sortby order" part to cqlQuery, if query already has "sortby" part, then "order"
    * is added as second sort attribute
+   *
    * @param cqlQuery initial query
    * @return query with "sortby order"
    */
@@ -301,26 +302,29 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       SortVisitor visitor = new SortVisitor();
       node.traverse(visitor);
       CQLSortNode foundSortNode = visitor.getCqlSortNode();
-      if(foundSortNode != null){
+      if (foundSortNode != null) {
         foundSortNode.addSortIndex(new ModifierSet(ORDER_ATTRIBUTE));
         return node.toCQL();
-      }
-      else{
+      } else {
         CQLSortNode newSortNode = new CQLSortNode(node);
         newSortNode.addSortIndex(new ModifierSet(ORDER_ATTRIBUTE));
         return newSortNode.toCQL();
       }
     } catch (CQLParseException | IOException e) {
-      throw new IllegalArgumentException("Unsupported Query Format : Search query is in an unsupported format: " + cqlQuery, e);
+      throw new IllegalArgumentException("Unsupported Query Format : Search query is in an unsupported format: " + cqlQuery,
+        e);
     }
   }
 
-  private static class SortVisitor extends CQLDefaultNodeVisitor{
+  private static class SortVisitor extends CQLDefaultNodeVisitor {
+
     private CQLSortNode cqlSortNode;
+
     @Override
     public void onSortNode(CQLSortNode cqlSortNode) {
       this.cqlSortNode = cqlSortNode;
     }
+
     public CQLSortNode getCqlSortNode() {
       return cqlSortNode;
     }
