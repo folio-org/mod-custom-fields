@@ -15,9 +15,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
+import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -45,10 +45,11 @@ import org.folio.test.util.TestBase;
 public class CustomFieldsImplTest extends TestBase {
 
   private static final String STUB_FIELD_ID = "11111111-1111-1111-a111-111111111111";
-  private static final String STUB_FIELD_ID_2 = "22222222-2222-2222-a222-222222222222";
 
-  private static final Header USER8 = new Header(XOkapiHeaders.USER_ID, "88888888-8888-4888-8888-888888888888");
-  private static final Header USER9 = new Header(XOkapiHeaders.USER_ID, "99999999-9999-4999-9999-999999999999");
+  private static final String USER8_ID = "88888888-8888-4888-8888-888888888888";
+  private static final String USER9_ID = "99999999-9999-4999-9999-999999999999";
+  private static final Header USER8 = createTokenHeader("m8", USER8_ID);
+  private static final Header USER9 = createTokenHeader("mockuser9", USER9_ID);
 
   private static final String CUSTOM_FIELDS_PATH = "custom-fields";
   private static final String CUSTOM_FIELDS_ID_PATH = CUSTOM_FIELDS_PATH + "/" + STUB_FIELD_ID;
@@ -96,7 +97,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     final Metadata noteTypeMetadata = customField.getMetadata();
 
-    assertEquals(USER8.getValue(), noteTypeMetadata.getCreatedByUserId());
+    assertEquals(USER8_ID, noteTypeMetadata.getCreatedByUserId());
     assertEquals("m8", noteTypeMetadata.getCreatedByUsername());
   }
 
@@ -174,9 +175,9 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
-  public void shouldReturn400WhenNoUserHeader() throws IOException, URISyntaxException {
+  public void shouldReturn401WhenNoTokenHeader() throws IOException, URISyntaxException {
     final String customField = readFile("fields/post/postCustomFieldHalfName.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_BAD_REQUEST);
+    postWithStatus(CUSTOM_FIELDS_PATH, customField, SC_UNAUTHORIZED);
   }
 
   @Test
@@ -188,7 +189,7 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldReturn404WhenUserNotFound() throws IOException, URISyntaxException {
-    final Header userWithoutPermission = new Header(XOkapiHeaders.USER_ID, "11999999-9999-4999-9999-999999999911");
+    final Header userWithoutPermission = createTokenHeader("name", "11999999-9999-4999-9999-999999999911");
     final String cfWithHalfName = readFile("fields/post/postCustomFieldHalfName.json");
     postWithStatus(CUSTOM_FIELDS_PATH, cfWithHalfName, SC_NOT_FOUND, userWithoutPermission);
   }
@@ -265,7 +266,7 @@ public class CustomFieldsImplTest extends TestBase {
       postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
         .as(CustomField.class);
 
-    CustomField  field = getWithOk(CUSTOM_FIELDS_PATH + "/" + customField.getId()).as(CustomField.class);
+    CustomField field = getWithOk(CUSTOM_FIELDS_PATH + "/" + customField.getId()).as(CustomField.class);
 
     assertEquals("Department", field.getName());
     assertEquals("department_1", field.getRefId());
@@ -282,9 +283,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void getCustomFieldsById() throws IOException, URISyntaxException {
-    final String postField = readFile("fields/post/postCustomField.json");
+    final CustomField postField = readJsonFile("fields/post/postCustomField.json", CustomField.class);
 
-    DBTestUtil.insertCustomField(vertx, STUB_FIELD_ID, STUB_TENANT, postField);
+    CustomFieldsDBTestUtil.saveCustomField(STUB_FIELD_ID, postField, vertx);
 
     CustomField field = getWithOk(CUSTOM_FIELDS_ID_PATH).as(CustomField.class);
 
@@ -315,10 +316,10 @@ public class CustomFieldsImplTest extends TestBase {
 
     final Metadata noteTypeMetadata = field.getMetadata();
 
-    assertEquals(USER8.getValue(), noteTypeMetadata.getCreatedByUserId());
+    assertEquals(USER8_ID, noteTypeMetadata.getCreatedByUserId());
     assertEquals("m8", noteTypeMetadata.getCreatedByUsername());
 
-    assertEquals(USER9.getValue(), noteTypeMetadata.getUpdatedByUserId());
+    assertEquals(USER9_ID, noteTypeMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", noteTypeMetadata.getUpdatedByUsername());
   }
 
@@ -339,10 +340,10 @@ public class CustomFieldsImplTest extends TestBase {
 
     final Metadata noteTypeMetadata = field.getMetadata();
 
-    assertEquals(USER8.getValue(), noteTypeMetadata.getCreatedByUserId());
+    assertEquals(USER8_ID, noteTypeMetadata.getCreatedByUserId());
     assertEquals("m8", noteTypeMetadata.getCreatedByUsername());
 
-    assertEquals(USER9.getValue(), noteTypeMetadata.getUpdatedByUserId());
+    assertEquals(USER9_ID, noteTypeMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", noteTypeMetadata.getUpdatedByUsername());
   }
 
@@ -387,8 +388,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldUpdateAllCustomFields() throws IOException, URISyntaxException {
-    CustomField createdField = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
-      .as(CustomField.class);
+    CustomField createdField =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField2.json"), SC_CREATED, USER8)
       .as(CustomField.class);
 
@@ -408,9 +410,9 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals(1, (int) firstField.getOrder());
     assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
     final Metadata firstFieldMetadata = firstField.getMetadata();
-    assertEquals(USER8.getValue(), firstFieldMetadata.getCreatedByUserId());
+    assertEquals(USER8_ID, firstFieldMetadata.getCreatedByUserId());
     assertEquals("m8", firstFieldMetadata.getCreatedByUsername());
-    assertEquals(USER9.getValue(), firstFieldMetadata.getUpdatedByUserId());
+    assertEquals(USER9_ID, firstFieldMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", firstFieldMetadata.getUpdatedByUsername());
 
     CustomField secondField = customFields.get(1);
@@ -422,16 +424,17 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals(2, (int) secondField.getOrder());
     assertEquals(CustomField.Type.TEXTBOX_SHORT, secondField.getType());
     final Metadata secondFieldMetadata = secondField.getMetadata();
-    assertEquals(USER9.getValue(), secondFieldMetadata.getCreatedByUserId());
+    assertEquals(USER9_ID, secondFieldMetadata.getCreatedByUserId());
     assertEquals("mockuser9", secondFieldMetadata.getCreatedByUsername());
-    assertEquals(USER9.getValue(), secondFieldMetadata.getUpdatedByUserId());
+    assertEquals(USER9_ID, secondFieldMetadata.getUpdatedByUserId());
     assertEquals("mockuser9", secondFieldMetadata.getUpdatedByUsername());
   }
 
   @Test
   public void deleteCustomFieldsById() throws IOException, URISyntaxException {
-    final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
-      .as(CustomField.class);
+    final CustomField customFieldOne =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
 
     deleteWithNoContent(CUSTOM_FIELDS_PATH + "/" + customFieldOne.getId());
     deleteWithStatus(CUSTOM_FIELDS_ID_PATH, SC_NOT_FOUND);
@@ -439,8 +442,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void deleteCustomFieldAndReorderLast() throws IOException, URISyntaxException {
-    final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
-      .as(CustomField.class);
+    final CustomField customFieldOne =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder3.json"), SC_CREATED, USER8);
 
@@ -458,9 +462,10 @@ public class CustomFieldsImplTest extends TestBase {
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8);
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
 
-    deleteWithStatus(CUSTOM_FIELDS_PATH + "/11111111-2222-3333-a444-555555555555" , SC_NOT_FOUND);
+    deleteWithStatus(CUSTOM_FIELDS_PATH + "/11111111-2222-3333-a444-555555555555", SC_NOT_FOUND);
 
-    CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH + "?query=cql.allRecords=1 sortby order").as(CustomFieldCollection.class);
+    CustomFieldCollection fields =
+      getWithOk(CUSTOM_FIELDS_PATH + "?query=cql.allRecords=1 sortby order").as(CustomFieldCollection.class);
     assertEquals(3, fields.getCustomFields().size());
     assertEquals(1, (int) fields.getCustomFields().get(0).getOrder());
     assertEquals(2, (int) fields.getCustomFields().get(1).getOrder());
@@ -479,8 +484,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldDeleteAndGenerateNewRefId() throws IOException, URISyntaxException {
-    final CustomField customFieldOne = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
-      .as(CustomField.class);
+    final CustomField customFieldOne =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
 
     postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomFieldOrder2.json"), SC_CREATED, USER8);
 
@@ -496,8 +502,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldReturnEmptyStatsForExistingField() throws IOException, URISyntaxException {
-    final CustomField field = postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
-      .as(CustomField.class);
+    final CustomField field =
+      postWithStatus(CUSTOM_FIELDS_PATH, readFile("fields/post/postCustomField.json"), SC_CREATED, USER8)
+        .as(CustomField.class);
 
     CustomFieldStatistic stats = getWithOk(
       CUSTOM_FIELDS_PATH + "/" + field.getId() + "/stats").as(CustomFieldStatistic.class);

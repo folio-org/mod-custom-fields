@@ -7,6 +7,7 @@
     "id": {
       "type": "string",
       "description": "Unique generated identifier for the custom field",
+      "$ref": "raml-util/schemas/uuid.schema",
       "example": "62d00c36-a94f-434d-9cd2-c7ea159303da"
     },
     "name": {
