@@ -8,7 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.folio.repository.CustomFieldsConstants.CUSTOM_FIELDS_TABLE;
 import static org.folio.test.util.DBTestUtil.deleteFromTable;
 import static org.folio.test.util.DBTestUtil.getAll;
-import static org.folio.test.util.DBTestUtil.save;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
@@ -33,7 +32,6 @@ public class CustomFieldsTestUtil {
 
   public static final String STUB_FIELD_ID = "11111111-1111-1111-a111-111111111111";
   public static final String CUSTOM_FIELDS_PATH = "/custom-fields";
-  public static final String CUSTOM_FIELDS_ID_PATH = CUSTOM_FIELDS_PATH + "/" + STUB_FIELD_ID;
   public static final String USERS_PATH = "/users";
 
   private CustomFieldsTestUtil() {
@@ -45,10 +43,6 @@ public class CustomFieldsTestUtil {
 
   public static List<CustomField> getAllCustomFields(Vertx vertx) {
     return getAll(CustomField.class, vertx, CUSTOM_FIELDS_TABLE);
-  }
-
-  public static void saveCustomField(String id, CustomField customField, Vertx vertx) {
-    save(id, customField, vertx, CUSTOM_FIELDS_TABLE);
   }
 
   public static void mockUserRequests() throws IOException, URISyntaxException {
@@ -66,7 +60,6 @@ public class CustomFieldsTestUtil {
           .withBody(readFile("users/mock_user_2.json"))
         ));
 
-
     stubFor(
       get(urlPathEqualTo(USERS_PATH + "/" + USER3_ID))
         .willReturn(aResponse()
@@ -78,5 +71,13 @@ public class CustomFieldsTestUtil {
         .willReturn(aResponse()
           .withStatus(404))
     );
+  }
+
+  public static String itemResourcePath(String id) {
+    return CUSTOM_FIELDS_PATH + "/" + id;
+  }
+
+  public static String itemStatResourcePath(String id) {
+    return itemResourcePath(id) + "/stats";
   }
 }
