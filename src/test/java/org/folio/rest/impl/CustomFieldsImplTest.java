@@ -152,6 +152,14 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldReturn422IfOptionIdIsInvalid() throws IOException, URISyntaxException {
+    CustomField customField = readJsonFile("fields/post/singleSelect/postValidSingleSelect.json", CustomField.class);
+    customField.getSelectField().getOptions().getValues().get(0).setId("opt_12121212121221");
+    String error = postWithStatus(CUSTOM_FIELDS_PATH, Json.encode(customField), SC_UNPROCESSABLE_ENTITY).asString();
+    assertThat(error, containsString("must match \\\"opt_\\\\d{1,5}\\\""));
+  }
+
+  @Test
   public void shouldReturn401WhenUserUnauthorized() throws IOException, URISyntaxException {
     Header userWithoutPermission = new Header(XOkapiHeaders.USER_ID, USER3_ID);
     String cfWithHalfName = readFile("fields/post/postCustomFieldHalfName.json");

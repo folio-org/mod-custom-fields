@@ -8,7 +8,8 @@
     "id": {
       "type": "string",
       "description": "Unique identifier for the option",
-      "pattern": "opt_\\d+"
+      "pattern": "opt_\\d{1,5}",
+      "example": "opt_1"
     },
     "value": {
       "type": "string",
@@ -18,7 +19,8 @@
     "default": {
       "type": "boolean",
       "description": "Indicates that this value is default",
-      "default": false
+      "default": false,
+      "example": false
     }
   },
   "required": [
