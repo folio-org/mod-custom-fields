@@ -254,9 +254,9 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void getCustomFieldsById() throws IOException, URISyntaxException {
-    createCustomField(readFile("fields/post/postCustomField.json"));
+    CustomField customField = createCustomField(readFile("fields/post/postCustomField.json"));
 
-    CustomField actual = getWithOk(itemResourcePath(STUB_FIELD_ID)).as(CustomField.class);
+    CustomField actual = getWithOk(itemResourcePath(customField.getId())).as(CustomField.class);
 
     assertEquals("Department", actual.getName());
     assertNotNull(actual.getRefId());
