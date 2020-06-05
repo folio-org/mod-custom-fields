@@ -6,11 +6,23 @@
   "entityType": "user",
   "helpText": "Choose your favorite food",
   "order": 1,
-  "selectField" : {
-    "defaults" : ["eggs"],
-    "multiSelect" : true,
-    "options" :  {
-      "values" : ["eggs", "pizza", "potatoes", "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean c", "barbeque"]
+  "selectField": {
+    "multiSelect": true,
+    "options": {
+      "values": [
+        {
+          "value": "eggs"
+        },
+        {
+          "value": "pizza"
+        },
+        {
+          "value": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean c"
+        },
+        {
+          "value": "barbeque"
+        }
+      ]
     }
   }
 }

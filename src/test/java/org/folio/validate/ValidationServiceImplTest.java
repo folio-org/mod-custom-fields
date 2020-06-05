@@ -1,20 +1,16 @@
 package org.folio.validate;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.apache.http.HttpStatus.SC_CREATED;
 
+import static org.folio.CustomFieldsTestUtil.CUSTOM_FIELDS_PATH;
+import static org.folio.CustomFieldsTestUtil.USER1_HEADER;
+import static org.folio.CustomFieldsTestUtil.mockUserRequests;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.restassured.http.Header;
 import io.vertx.core.Context;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
@@ -26,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.rest.impl.CustomFieldsDBTestUtil;
+import org.folio.CustomFieldsTestUtil;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Parameter;
 import org.folio.spring.SpringContextUtil;
@@ -34,10 +30,6 @@ import org.folio.test.util.TestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class ValidationServiceImplTest extends TestBase {
-
-  private static final String CUSTOM_FIELDS_PATH = "custom-fields";
-  private static final String USER8_ID = "88888888-8888-4888-8888-888888888888";
-  private static final Header USER8 = createTokenHeader("m8", USER8_ID);
 
   private ValidationService validationService;
 
@@ -47,26 +39,20 @@ public class ValidationServiceImplTest extends TestBase {
   @Before
   public void setUp() throws IOException, URISyntaxException {
     SpringContextUtil.autowireDependenciesFromFirstContext(this, vertx);
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/88888888-8888-4888-8888-888888888888"), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(200)
-          .withBody(readFile("users/mock_user.json"))
-        ));
-
     validationService = new ValidationServiceImpl(vertxContext);
+    mockUserRequests();
   }
 
   @After
   public void tearDown() {
-    CustomFieldsDBTestUtil.deleteAllCustomFields(vertx);
+    CustomFieldsTestUtil.deleteAllCustomFields(vertx);
   }
 
   @Test
   public void shouldReturnSuccessfulFutureIfValidationSucceeds(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"pizza\"}", CustomFieldValue.class);
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"opt_1\"}", CustomFieldValue.class);
     validationService
       .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .map(o -> {
@@ -83,20 +69,23 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnAnErrorIfValidationFails(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"table\"}", CustomFieldValue.class);
-    validationService
-      .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
-      .otherwise(e -> {
-        if (!(e instanceof CustomFieldValidationException)) {
-          context.fail(e);
-          return null;
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"opt_5\"}", CustomFieldValue.class);
+    validationService.validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
+      .onComplete(validation -> {
+        if (validation.failed()) {
+          Throwable cause = validation.cause();
+          if (!(cause instanceof CustomFieldValidationException)) {
+            context.fail(cause);
+          } else {
+            Errors errors = ((CustomFieldValidationException) cause).getErrors();
+            Parameter errorParam = errors.getErrors().get(0).getParameters().get(0);
+            context.assertEquals("favoritefood_1", errorParam.getKey());
+            context.assertEquals("\"opt_5\"", errorParam.getValue());
+          }
+        } else {
+          context.fail("Validation didn't fail.");
         }
-        Errors errors = ((CustomFieldValidationException) e).getErrors();
-        Parameter errorParam = errors.getErrors().get(0).getParameters().get(0);
-        context.assertEquals("favoritefood_1", errorParam.getKey());
-        context.assertEquals("\"table\"", errorParam.getValue());
         async.complete();
-        return null;
       });
   }
 
@@ -122,7 +111,7 @@ public class ValidationServiceImplTest extends TestBase {
   }
 
   private void createRadioButtonField() throws IOException, URISyntaxException {
-    String radioButton = readFile("fields/post/radioButton/postCustomFieldRadioButton.json");
-    postWithStatus(CUSTOM_FIELDS_PATH, radioButton, SC_CREATED, USER8);
+    String radioButton = readFile("fields/post/radioButton/postValidRadioButton.json");
+    postWithStatus(CUSTOM_FIELDS_PATH, radioButton, SC_CREATED, USER1_HEADER);
   }
 }

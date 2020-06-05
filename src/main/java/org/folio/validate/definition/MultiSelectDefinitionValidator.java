@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.folio.rest.jaxrs.model.CustomField;
 
 @Component
-public class MultiSelectDefinitionValidator extends SelectableField implements Validatable {
+public class MultiSelectDefinitionValidator extends SelectableFieldValidator implements Validatable {
 
   @Value("${custom.fields.definition.dropdown.option.size.max}")
   private int multiSelectOptionsMaxSize;
@@ -21,7 +21,6 @@ public class MultiSelectDefinitionValidator extends SelectableField implements V
     onlyHasAllowedFields(fieldDefinition, SELECT_ALLOWED_FIELDS);
     notSupportRepeatable(fieldDefinition);
     validateSelectFieldDefined(fieldDefinition);
-    validateDefaults(fieldDefinition);
     validateOptions(fieldDefinition, multiSelectOptionsMaxSize);
     validateMultiSelectProperty(fieldDefinition, true);
   }

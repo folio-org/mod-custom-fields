@@ -11,22 +11,19 @@
     "options": {
       "values": [
         {
+          "id": "opt1",
           "value": "eggs"
         },
         {
+          "id": "opt1",
           "value": "pizza"
         },
         {
+          "id": "opt2",
           "value": "potatoes"
         },
         {
-          "value": "pie"
-        },
-        {
           "value": "barbeque"
-        },
-        {
-          "value": "icecream"
         }
       ]
     }

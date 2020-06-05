@@ -27,7 +27,7 @@ public class SingleSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfSingleSelectIncorrectNumberOfOptions() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The max option size for 'SINGLE_SELECT_DROPDOWN' custom field type is 5");
+    expectedEx.expectMessage("The options amount should be in range 1 - 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithInvalidOptionsSize.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -36,34 +36,16 @@ public class SingleSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfSingleSelectIncorrectNumberOfDefaults() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The max defaults size for 'SINGLE_SELECT_DROPDOWN' custom field type is 1");
+    expectedEx.expectMessage("The max defaults amount is 1");
     final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/singleSelect/postInvalidDefaultsSize.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldReturnErrorIfOptionEmpty() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [potatoes]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/singleSelect/postWithDefaultsMoreThanOptions.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldReturnErrorIfInvalidDefaults() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [eggs, pizza, potatoes, pie, barbeque]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/singleSelect/postWithInvalidDefaulsValues.json", CustomField.class);
+      "fields/post/singleSelect/postWithInvalidDefaultsSize.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
   @Test
   public void shouldReturnErrorIfOptionNameTooLong() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The option name cannot be blank or have more than 65 characters");
+    expectedEx.expectMessage("The option value cannot be blank or have more than 65 length");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithOptionNameTooLong.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -72,7 +54,7 @@ public class SingleSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfMultiSelectValueNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should not be null.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'false'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithMultiSelectValueNotDefined.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -81,7 +63,7 @@ public class SingleSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfInvalidMultiSelectValue() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should be 'false' for 'SINGLE_SELECT_DROPDOWN' custom field type.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'false'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithInvalidMultiSelectValue.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -90,9 +72,18 @@ public class SingleSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The 'selectField' property should be defined for 'SINGLE_SELECT_DROPDOWN' custom field type.");
+    expectedEx.expectMessage("The 'selectField' property should be defined");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/singleSelect/postWithSelectFieldNotDefined.json", CustomField.class);
+    validator.validateDefinition(customField);
+  }
+
+  @Test
+  public void shouldReturnErrorIfIdsAreNotUnique() throws IOException, URISyntaxException {
+    expectedEx.expect(IllegalArgumentException.class);
+    expectedEx.expectMessage("Option IDs should be unique");
+    final CustomField customField = TestUtil.readJsonFile(
+      "fields/post/singleSelect/postWithNotUniqueIds.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 }

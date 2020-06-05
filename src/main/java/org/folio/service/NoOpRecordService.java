@@ -4,6 +4,7 @@ import static io.vertx.core.Future.succeededFuture;
 
 import io.vertx.core.Future;
 
+import org.folio.model.RecordUpdate;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 
@@ -21,6 +22,11 @@ public final class NoOpRecordService implements RecordService {
 
   @Override
   public Future<Void> deleteAllValues(CustomField field, String tenantId) {
+    return succeededFuture();
+  }
+
+  @Override
+  public Future<Void> deleteMissedOptionValues(RecordUpdate recordUpdate, String tenantId) {
     return succeededFuture();
   }
 

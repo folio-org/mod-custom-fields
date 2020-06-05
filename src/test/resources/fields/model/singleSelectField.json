@@ -6,11 +6,24 @@
   "type": "SINGLE_SELECT_DROPDOWN",
   "entityType": "user",
   "helpText": "Choose your favorite food",
-  "selectField" : {
-    "defaults" : ["eggs"],
-    "multiSelect" : false,
-    "options" :  {
-      "values" : ["eggs", "pizza", "potatoes" ]
+  "selectField": {
+    "multiSelect": false,
+    "options": {
+      "values": [
+        {
+          "id": "eggs",
+          "value": "eggs",
+          "default": true
+        },
+        {
+          "id": "pizza",
+          "value": "pizza"
+        },
+        {
+          "id": "potatoes",
+          "value": "potatoes"
+        }
+      ]
     }
   }
 }

@@ -30,13 +30,6 @@ public class SelectFieldValueValidatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionIfValueIsNotArrayType() throws IOException, URISyntaxException {
-    CustomField fieldDefinition = getMultiSelectDropdownField();
-    String jsonValue = "\"pizza\"";
-    validator.validate(parseCustomFieldJsonValue(jsonValue), fieldDefinition);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
   public void shouldThrowExceptionIfOneValueIsNotAString() throws IOException, URISyntaxException {
     CustomField fieldDefinition = getMultiSelectDropdownField();
     String jsonValue = "[\"pizza\", {\"eggs\" : \"eggs\"},\"eggs\"]";

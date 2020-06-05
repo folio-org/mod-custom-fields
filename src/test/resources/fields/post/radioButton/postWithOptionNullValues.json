@@ -7,7 +7,6 @@
   "helpText": "Choose your favorite food",
   "order": 1,
   "selectField" : {
-    "defaults" : [],
     "multiSelect" : false,
     "options" :  {
       "values" : [null]

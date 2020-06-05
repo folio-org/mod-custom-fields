@@ -14,19 +14,16 @@
           "value": "eggs"
         },
         {
+          "id": "opt1",
           "value": "pizza"
         },
         {
+          "id": "opt2",
           "value": "potatoes"
         },
         {
-          "value": "pie"
-        },
-        {
+          "id": "opt3",
           "value": "barbeque"
-        },
-        {
-          "value": "icecream"
         }
       ]
     }

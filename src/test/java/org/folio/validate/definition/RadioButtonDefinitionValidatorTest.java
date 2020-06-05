@@ -27,7 +27,7 @@ public class RadioButtonDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfIncorrectNumberOfOptions() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The max option size for 'RADIO_BUTTON' custom field type is 5");
+    expectedEx.expectMessage("The options amount should be in range 1 - 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithInvalidSizeOptions.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -36,25 +36,16 @@ public class RadioButtonDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfOptionEmpty() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: []");
+    expectedEx.expectMessage("The options amount should be in range 1 - 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithEmptyOptions.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
   @Test
-  public void shouldReturnErrorIfNumberOfDefaultsMoreThanDefined() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [eggs, pizza]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/radioButton/postWithDefaultSizeMoreThanDefined.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
   public void shouldReturnErrorIfOptionValuesAreNull() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The option name cannot be blank or have more than 65 characters");
+    expectedEx.expectMessage("Option should not be null");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithOptionNullValues.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -63,25 +54,16 @@ public class RadioButtonDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfIncorrectNumberOfDefaults() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The max defaults size for 'RADIO_BUTTON' custom field type is 1");
+    expectedEx.expectMessage("The max defaults amount is 1");
     final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/radioButton/postWithInvalidDefaultsSize.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldReturnErrorIfIncorrectDefaultValue() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [eggs, pizza, potatoes, pie, barbeque]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/radioButton/postWithInvalidDefaultValues.json", CustomField.class);
+      "fields/post/radioButton/postWithInvalidDefaultsAmount.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
   @Test
   public void shouldReturnErrorIfMultiSelectValueNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should not be null.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'false'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithMultiSelectValueNotDefined.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -90,7 +72,7 @@ public class RadioButtonDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfInvalidMultiSelectValue() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should be 'false' for 'RADIO_BUTTON' custom field type.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'false'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithInvalidMultiSelectValue.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -99,16 +81,9 @@ public class RadioButtonDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The 'selectField' property should be defined for 'RADIO_BUTTON' custom field type.");
+    expectedEx.expectMessage("The 'selectField' property should be defined");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/radioButton/postWithSelectFieldNotDefined.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldNotReturnErrorIfDefaultIsNull() throws IOException, URISyntaxException {
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/radioButton/postWithDefaultIsNull.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
