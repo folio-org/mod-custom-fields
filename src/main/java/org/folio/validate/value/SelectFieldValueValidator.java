@@ -13,6 +13,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.SelectFieldOption;
 
 @Component
 public class SelectFieldValueValidator implements CustomFieldValueValidator {
@@ -26,7 +27,11 @@ public class SelectFieldValueValidator implements CustomFieldValueValidator {
       validateFieldList(fieldValue, fieldDefinition);
     } else {
       if (CustomField.Type.MULTI_SELECT_DROPDOWN == type) {
-        validateFieldList(fieldValue, fieldDefinition);
+        if (fieldValue instanceof List) {
+          validateFieldList(fieldValue, fieldDefinition);
+        } else {
+          validateField(fieldValue, fieldDefinition);
+        }
       } else {
         validateField(fieldValue, fieldDefinition);
       }
@@ -40,9 +45,11 @@ public class SelectFieldValueValidator implements CustomFieldValueValidator {
 
   private void validateField(Object fieldValue, CustomField fieldDefinition) {
     isInstanceOf(String.class, fieldValue, EXPECT_STRING_MESSAGE, fieldDefinition.getType());
-    List<String> possibleValues = fieldDefinition.getSelectField().getOptions().getValues();
-    isTrue(possibleValues.contains(fieldValue.toString()),
-      NOT_ALLOWED_VALUE_MESSAGE, fieldDefinition.getRefId(), possibleValues);
+    String optionId = (String) fieldValue;
+    List<SelectFieldOption> possibleValues = fieldDefinition.getSelectField().getOptions().getValues();
+    boolean isAllowedValue = possibleValues
+      .stream().anyMatch(selectFieldOption -> selectFieldOption.getId().equals(optionId));
+    isTrue(isAllowedValue, NOT_ALLOWED_VALUE_MESSAGE, fieldDefinition.getRefId(), possibleValues);
   }
 
   @Override

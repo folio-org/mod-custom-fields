@@ -1,29 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "description": "Custom Field Options Schema",
+  "description": "Select Field Options Schema",
   "additionalProperties": false,
+  "javaType": "org.folio.rest.jaxrs.model.SelectFieldOptions",
   "properties": {
     "values": {
       "type": "array",
       "description": "Defines the possible values for the custom field",
       "items": {
-        "type": "string"
-      },
-      "example": "[\"Engineering\", \"Design\"]"
+        "type": "object",
+        "$ref": "selectFieldOption.json"
+      }
     },
     "sortingOrder": {
       "type": "string",
-      "enum": ["ASC", "DESC", "CUSTOM"],
+      "enum": [
+        "ASC",
+        "DESC",
+        "CUSTOM"
+      ],
       "description": "Defines sorting order for the custom field",
-      "example": "ASC"
-    },
-    "sorted": {
-      "type": "array",
-      "description": "Defines sorted array of the custom field",
-      "items": {
-        "type": "string"
-      }
+      "example": "ASC",
+      "default": "CUSTOM"
     }
-  }
+  },
+  "required": [
+    "values"
+  ]
 }

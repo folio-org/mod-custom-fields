@@ -6,8 +6,12 @@
   "entityType": "user",
   "helpText": "Choose your favorite food",
   "order": 1,
-  "selectField" : {
-    "defaults" : ["eggs"],
-    "multiSelect" : false
+  "selectField": {
+    "defaults": [
+      {
+        "value": "eggs"
+      }
+    ],
+    "multiSelect": false
   }
 }

@@ -6,11 +6,30 @@
   "entityType": "user",
   "helpText": "Choose your favorite food",
   "order": 1,
-  "selectField" : {
-    "defaults" : ["eggs"],
-    "multiSelect" : false,
-    "options" :  {
-      "values" : ["eggs", "pizza", "potatoes", "pie", "barbeque", "icecream"]
+  "selectField": {
+    "multiSelect": false,
+    "options": {
+      "values": [
+        {
+          "value": "eggs",
+          "default": true
+        },
+        {
+          "value": "pizza"
+        },
+        {
+          "value": "potatoes"
+        },
+        {
+          "value": "pie"
+        },
+        {
+          "value": "barbeque"
+        },
+        {
+          "value": "icecream"
+        }
+      ]
     }
   }
 }

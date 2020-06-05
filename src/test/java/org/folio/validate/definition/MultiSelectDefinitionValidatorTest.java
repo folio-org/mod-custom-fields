@@ -27,34 +27,16 @@ public class MultiSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfIncorrectNumberOfOptions() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The max option size for 'MULTI_SELECT_DROPDOWN' custom field type is 5");
+    expectedEx.expectMessage("The options amount should be in range 1 - 5");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/multiSelect/postWithInvalidSizeOptions.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
   @Test
-  public void shouldReturnErrorIfOptionEmpty() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [potatoes]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/multiSelect/postWithDefaultsMoreThanOptions.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
-  public void shouldReturnErrorIfInvalidDefaults() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The default value must be one of defined options: [eggs, pizza, potatoes, pie, barbeque]");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/multiSelect/postWithInvalidDefaulsValues.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
   public void shouldReturnErrorIfOptionNameTooLong() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The option name cannot be blank or have more than 65 characters");
+    expectedEx.expectMessage("The option value cannot be blank or have more than 65 length");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/multiSelect/postWithOptionNameTooLong.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -63,7 +45,7 @@ public class MultiSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfMultiSelectValueNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should not be null.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'true'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/multiSelect/postWithMultiSelectValueNotDefined.json", CustomField.class);
     validator.validateDefinition(customField);
@@ -72,25 +54,16 @@ public class MultiSelectDefinitionValidatorTest {
   @Test
   public void shouldReturnErrorIfInvalidMultiSelectValue() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The value for 'multiSelect' should be 'true' for 'MULTI_SELECT_DROPDOWN' custom field type.");
+    expectedEx.expectMessage("The 'multiSelect' property should be 'true'");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/multiSelect/postWithInvalidMultiSelectValue.json", CustomField.class);
     validator.validateDefinition(customField);
   }
 
   @Test
-  public void shouldReturnErrorIfDuplicatesInDefaults() throws IOException, URISyntaxException {
-    expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The defaults list should not contain duplicate values");
-    final CustomField customField = TestUtil.readJsonFile(
-      "fields/post/multiSelect/postWithDuplicatesInDefaults.json", CustomField.class);
-    validator.validateDefinition(customField);
-  }
-
-  @Test
   public void shouldReturnErrorIfSelectFieldNotDefined() throws IOException, URISyntaxException {
     expectedEx.expect(IllegalArgumentException.class);
-    expectedEx.expectMessage("The 'selectField' property should be defined for 'MULTI_SELECT_DROPDOWN' custom field type.");
+    expectedEx.expectMessage("The 'selectField' property should be defined");
     final CustomField customField = TestUtil.readJsonFile(
       "fields/post/multiSelect/postWithSelectFieldNotDefined.json", CustomField.class);
     validator.validateDefinition(customField);

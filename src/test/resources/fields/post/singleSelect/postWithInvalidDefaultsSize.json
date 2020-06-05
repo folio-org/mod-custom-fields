@@ -11,10 +11,12 @@
     "options": {
       "values": [
         {
-          "value": "eggs"
+          "value": "eggs",
+          "default": true
         },
         {
-          "value": "pizza"
+          "value": "pizza",
+          "default": true
         },
         {
           "value": "potatoes"
@@ -24,9 +26,6 @@
         },
         {
           "value": "barbeque"
-        },
-        {
-          "value": "icecream"
         }
       ]
     }

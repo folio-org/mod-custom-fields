@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.folio.rest.jaxrs.model.CustomField;
 
 @Component
-public class RadioButtonDefinitionValidator extends SelectableField implements Validatable {
+public class RadioButtonDefinitionValidator extends SelectableFieldValidator implements Validatable {
 
   @Value("${custom.fields.definition.radio.button.option.size.max}")
   private int radioButtonOptionsSizeMax;
@@ -21,9 +21,8 @@ public class RadioButtonDefinitionValidator extends SelectableField implements V
     onlyHasAllowedFields(fieldDefinition, SELECT_ALLOWED_FIELDS);
     notSupportRepeatable(fieldDefinition);
     validateSelectFieldDefined(fieldDefinition);
-    validateDefaults(fieldDefinition);
-    validateSingleDefaultSize(fieldDefinition);
     validateOptions(fieldDefinition, radioButtonOptionsSizeMax);
+    validateSingleSelectDefaultsAmount(fieldDefinition);
     validateMultiSelectProperty(fieldDefinition, false);
   }
 

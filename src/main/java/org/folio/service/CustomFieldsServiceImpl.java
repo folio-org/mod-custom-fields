@@ -3,13 +3,20 @@ package org.folio.service;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static java.lang.String.format;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.reverseOrder;
 
 import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
+import static org.folio.service.CustomFieldUtils.extractDefaultOptionIds;
+import static org.folio.service.CustomFieldUtils.extractOptionIds;
+import static org.folio.service.CustomFieldUtils.isSelectableCustomFieldType;
 
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +34,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,16 +46,17 @@ import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.ModifierSet;
 
 import org.folio.common.OkapiParams;
+import org.folio.model.RecordUpdate;
 import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.folio.rest.jaxrs.model.Options;
+import org.folio.rest.jaxrs.model.SelectFieldOption;
+import org.folio.rest.jaxrs.model.SelectFieldOptions;
 import org.folio.rest.persist.SQLConnection;
 import org.folio.rest.validate.Validation;
 import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.service.exc.ServiceExceptions;
-
 
 @Component
 public class CustomFieldsServiceImpl implements CustomFieldsService {
@@ -72,81 +81,14 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return repository.maxOrder(params.getTenant())
       .compose(maxOrder -> {
         customField.setOrder(maxOrder + 1);
-        sortValues(customField);
         return save(customField, params, null);
-      });
-  }
-
-  private void sortValues(CustomField customField) {
-    if (isSortableCustomFieldType(customField.getType())) {
-      final Options cfOptions = customField.getSelectField().getOptions();
-      final Optional<Options.SortingOrder> sortingOrder = Optional.ofNullable(cfOptions.getSortingOrder());
-      if (sortingOrder.isPresent()) {
-        switch (sortingOrder.get()) {
-          case ASC:
-            cfOptions.getValues().sort(Comparator.naturalOrder());
-            break;
-          case DESC:
-            cfOptions.getValues().sort(Comparator.reverseOrder());
-            break;
-          case CUSTOM:
-          default:
-            break;
-        }
-      }
-    }
-  }
-
-  private boolean isSortableCustomFieldType(CustomField.Type type) {
-    return CustomField.Type.SINGLE_SELECT_DROPDOWN.equals(type) || CustomField.Type.MULTI_SELECT_DROPDOWN.equals(type);
-  }
-
-  private Future<CustomField> save(CustomField customField, OkapiParams params,
-                                   @Nullable AsyncResult<SQLConnection> connection) {
-    final String unAccentName = unAccentName(customField.getName());
-    return populateCreator(customField, params)
-      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
-      .compose(maxRefId -> {
-        customField.setRefId(getCustomFieldRefId(unAccentName, maxRefId));
-        return repository.save(customField, params.getTenant(), connection);
       });
   }
 
   @Override
   public Future<Void> update(String id, CustomField customField, OkapiParams params) {
     return findById(id, params.getTenant())
-      .compose(oldCustomField -> {
-        customField.setOrder(oldCustomField.getOrder());
-        return update(customField, oldCustomField, params, null);
-      });
-  }
-
-  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
-                              @Nullable AsyncResult<SQLConnection> connection) {
-    customField.setId(oldCustomField.getId());
-    customField.setRefId(oldCustomField.getRefId());
-
-    sortValues(customField);
-
-    Future<Void> validated = Validation.instance()
-      .addTest(customField.getType(), typeNotChanged(oldCustomField.getType()))
-      .validate();
-
-    return validated
-      .compose(o -> populateUpdater(customField, params))
-      .compose(o -> repository.update(customField, params.getTenant(), connection))
-      .compose(found -> failIfNotFound(found, customField.getId()));
-  }
-
-  private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
-    return type -> validateValueNotChanged(TYPE_ATTRIBUTE, type, oldType, TYPE_CHANGING_MESSAGE, type, oldType);
-  }
-
-  private static <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message,
-                                                  Object... values) {
-    if (!Objects.equals(newValue, oldValue)) {
-      throw new InvalidFieldValueException(field, newValue, format(message, values));
-    }
+      .compose(oldCustomField -> update(customField, oldCustomField, params, null));
   }
 
   @Override
@@ -204,6 +146,105 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       });
   }
 
+  @Override
+  public Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId) {
+    return findById(id, tenantId)
+      .compose(field -> recordService.retrieveStatistic(field, tenantId));
+  }
+
+  private List<String> getOptionsIdsToDelete(CustomField newCustomField, CustomField oldCustomField) {
+    if (isSelectableCustomFieldType(newCustomField)) {
+      List<String> newCFOptionIds = extractOptionIds(newCustomField);
+      List<String> oldCFOptionIds = extractOptionIds(oldCustomField);
+      return new ArrayList<>(CollectionUtils.subtract(oldCFOptionIds, newCFOptionIds));
+    }
+    return Collections.emptyList();
+  }
+
+  private void sortOptions(CustomField customField) {
+    final SelectFieldOptions cfOptions = customField.getSelectField().getOptions();
+    final Optional<SelectFieldOptions.SortingOrder> sortingOrder = Optional.ofNullable(cfOptions.getSortingOrder());
+    if (sortingOrder.isPresent()) {
+      switch (sortingOrder.get()) {
+        case ASC:
+          cfOptions.getValues().sort(comparing(SelectFieldOption::getValue, naturalOrder()));
+          break;
+        case DESC:
+          cfOptions.getValues().sort(comparing(SelectFieldOption::getValue, reverseOrder()));
+          break;
+        case CUSTOM:
+        default:
+          break;
+      }
+    }
+  }
+
+  private Future<CustomField> save(CustomField customField, OkapiParams params,
+                                   @Nullable AsyncResult<SQLConnection> connection) {
+    final String unAccentName = unAccentName(customField.getName());
+    if (isSelectableCustomFieldType(customField)) {
+      sortOptions(customField);
+      generateOptionIds(customField);
+    }
+    return populateCreator(customField, params)
+      .compose(o -> repository.maxRefId(unAccentName, params.getTenant(), connection))
+      .compose(maxRefId -> {
+        customField.setRefId(getCustomFieldRefId(unAccentName, maxRefId));
+        return repository.save(customField, params.getTenant(), connection);
+      });
+  }
+
+  private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
+                              @Nullable AsyncResult<SQLConnection> connection) {
+    customField.setId(oldCustomField.getId());
+    customField.setRefId(oldCustomField.getRefId());
+    customField.setOrder(oldCustomField.getOrder());
+
+    RecordUpdate recordUpdate = createRecordUpdate(customField, oldCustomField);
+
+    Future<Void> validated = Validation.instance()
+      .addTest(customField.getType(), typeNotChanged(oldCustomField.getType()))
+      .validate();
+
+    return validated
+      .compose(o -> populateUpdater(customField, params))
+      .compose(o -> repository.update(customField, params.getTenant(), connection))
+      .compose(found -> failIfNotFound(found, customField.getId()))
+      .compose(aVoid -> {
+        if (isRequiredRecordUpdate(recordUpdate)) {
+          return recordService.deleteMissedOptionValues(recordUpdate, params.getTenant());
+        } else {
+          return Future.succeededFuture(aVoid);
+        }
+      });
+  }
+
+  private boolean isRequiredRecordUpdate(RecordUpdate recordUpdate) {
+    return recordUpdate != null && !CollectionUtils.isEmpty(recordUpdate.getOptionIdsToDelete());
+  }
+
+  private RecordUpdate createRecordUpdate(CustomField customField, CustomField oldCustomField) {
+    RecordUpdate recordUpdate = null;
+    if (isSelectableCustomFieldType(customField)) {
+      sortOptions(customField);
+      generateOptionIds(customField);
+      List<String> optionIdsToDelete = getOptionsIdsToDelete(customField, oldCustomField);
+      List<String> defaultIds = extractDefaultOptionIds(customField);
+      recordUpdate = new RecordUpdate(customField.getRefId(), optionIdsToDelete, defaultIds);
+    }
+    return recordUpdate;
+  }
+
+  private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
+    return type -> validateValueNotChanged(TYPE_ATTRIBUTE, type, oldType, TYPE_CHANGING_MESSAGE, type, oldType);
+  }
+
+  private <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message, Object... values) {
+    if (!Objects.equals(newValue, oldValue)) {
+      throw new InvalidFieldValueException(field, newValue, format(message, values));
+    }
+  }
+
   private void setOrder(List<CustomField> customFields) {
     for (int i = 0; i < customFields.size(); i++) {
       customFields.get(i).setOrder(i + 1);
@@ -223,7 +264,6 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return resultFuture.map(o -> null);
   }
 
-
   private Future<Void> updateCustomFieldsOrder(String tenantId) {
     final Future<Void> result = succeededFuture();
     return result
@@ -233,26 +273,20 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private Future<Void> updateCustomFields(List<CustomField> customFields, String tenantId) {
-    final List<Future> collect = customFields
+    return CompositeFuture.all(customFields
       .stream()
       .map(customField -> repository.update(customField, tenantId))
-      .collect(Collectors.toList());
-    return CompositeFuture.all(collect).map((Void) null);
+      .collect(Collectors.toList())
+    ).map(f -> null);
   }
 
   private List<CustomField> updateCustomFieldsOrder(CustomFieldCollection customFieldsCollection) {
     final List<CustomField> customFields = customFieldsCollection.getCustomFields();
-    customFields.sort(Comparator.comparing(CustomField::getOrder));
+    customFields.sort(comparing(CustomField::getOrder));
     for (int i = 0; i < customFields.size(); i++) {
       customFields.get(i).setOrder(i + 1);
     }
     return customFields;
-  }
-
-  @Override
-  public Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId) {
-    return findById(id, tenantId)
-      .compose(field -> recordService.retrieveStatistic(field, tenantId));
   }
 
   private Future<Void> failIfNotFound(boolean found, String entityId) {
@@ -313,6 +347,21 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     } catch (CQLParseException | IOException e) {
       throw new IllegalArgumentException("Unsupported Query Format : Search query is in an unsupported format: " + cqlQuery,
         e);
+    }
+  }
+
+  private void generateOptionIds(CustomField field) {
+    List<SelectFieldOption> values = field.getSelectField().getOptions().getValues();
+    int maxOptionIdIndex = extractOptionIds(field).stream()
+      .filter(Objects::nonNull)
+      .map(s -> s.substring(s.indexOf('_') + 1))
+      .mapToInt(Integer::parseInt)
+      .max()
+      .orElse(0);
+    for (SelectFieldOption value : values) {
+      if (StringUtils.isBlank(value.getId())) {
+        value.setId("opt_" + ++maxOptionIdIndex);
+      }
     }
   }
 

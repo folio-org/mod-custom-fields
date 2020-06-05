@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+
 import io.vertx.core.Future;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -18,22 +20,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import org.folio.model.RecordUpdate;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.test.junit.TestStartLoggingRule;
 
 public class NoOpRecordServiceTest {
 
-  @Rule
-  public TestRule watcher = TestStartLoggingRule.instance();
-
   private static EasyRandom cfRandom;
   private static StringRandomizer tenantIdRandom;
-
+  @Rule
+  public TestRule watcher = TestStartLoggingRule.instance();
   private CustomField field;
   private String tenantId;
   private NoOpRecordService service;
-
 
   @BeforeClass
   public static void setUpClass() {
@@ -49,6 +49,14 @@ public class NoOpRecordServiceTest {
     cfRandom = new EasyRandom(params);
 
     tenantIdRandom = StringRandomizer.aNewStringRandomizer(10);
+  }
+
+  private static CustomField nextRandomCustomField() {
+    return cfRandom.nextObject(CustomField.class);
+  }
+
+  private static String nextRandomTenantId() {
+    return tenantIdRandom.getRandomValue();
   }
 
   @Before
@@ -79,12 +87,13 @@ public class NoOpRecordServiceTest {
     assertTrue(res.succeeded());
   }
 
-  private static CustomField nextRandomCustomField() {
-    return cfRandom.nextObject(CustomField.class);
-  }
+  @Test
+  public void shouldReturnSuccessOnDeleteMissedOptionValues() {
+    RecordUpdate recordUpdate = new RecordUpdate(field.getRefId(), Collections.emptyList(), Collections.emptyList());
+    Future<Void> res = service.deleteMissedOptionValues(recordUpdate, tenantId);
 
-  private static String nextRandomTenantId() {
-    return tenantIdRandom.getRandomValue();
+    assertNotNull(res);
+    assertTrue(res.succeeded());
   }
 
   private enum EntityType {

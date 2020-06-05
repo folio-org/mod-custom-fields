@@ -15,8 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
-import org.folio.rest.jaxrs.model.PutCustomFieldCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -27,6 +25,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.jaxrs.model.PutCustomFieldCollection;
 import org.folio.rest.jaxrs.resource.CustomFields;
 import org.folio.service.CustomFieldsService;
 import org.folio.spring.SpringContextUtil;
@@ -48,6 +47,7 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void postCustomFields(String lang, CustomField entity, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
@@ -57,7 +57,10 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
-  public void putCustomFields(PutCustomFieldCollection request, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  @Validate
+  @HandleValidationErrors
+  public void putCustomFields(PutCustomFieldCollection request, Map<String, String> okapiHeaders,
+                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     List<CustomField> customFields = request.getCustomFields();
     customFields
       .forEach(definitionValidator::validate);
@@ -71,15 +74,18 @@ public class CustomFieldsImpl implements CustomFields {
 
   @Override
   @Validate
+  @HandleValidationErrors
   public void getCustomFields(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    Future<CustomFieldCollection> found = customFieldsService.findByQuery(query, offset, limit, lang, tenantId(okapiHeaders));
+    Future<CustomFieldCollection> found =
+      customFieldsService.findByQuery(query, offset, limit, lang, tenantId(okapiHeaders));
     respond(found, GetCustomFieldsResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
   }
 
   @Override
   @Validate
+  @HandleValidationErrors
   public void getCustomFieldsById(String id, String lang, Map<String, String> okapiHeaders,
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     Future<CustomField> field = customFieldsService.findById(id, tenantId(okapiHeaders));
@@ -88,6 +94,7 @@ public class CustomFieldsImpl implements CustomFields {
 
   @Override
   @Validate
+  @HandleValidationErrors
   public void deleteCustomFieldsById(String id, String lang, Map<String, String> okapiHeaders,
                                      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
@@ -96,6 +103,7 @@ public class CustomFieldsImpl implements CustomFields {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void putCustomFieldsById(String id, String lang, CustomField entity, Map<String, String> okapiHeaders,
                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
@@ -107,6 +115,7 @@ public class CustomFieldsImpl implements CustomFields {
 
   @Override
   @Validate
+  @HandleValidationErrors
   public void getCustomFieldsStatsById(String id, String lang, Map<String, String> okapiHeaders,
                                        Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     Future<CustomFieldStatistic> stats = customFieldsService.retrieveStatistic(id, tenantId(okapiHeaders));
