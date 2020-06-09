@@ -1,3 +1,9 @@
+## 1.4.0
+* MODCFIELDS-37 Implement repeatable field support
+* MODCFIELDS-43 Add support of custom field option IDs
+* Upgrade RMB to v39.0.2
+* Upgrade folio-service-tools to v1.5.0
+
 ## 1.3.0
 * Fix invalid jsonb order conversion
 * MODCFIELDS-40 Make RefId a read-only field
