@@ -7,6 +7,7 @@ import io.vertx.core.Future;
 import org.folio.common.OkapiParams;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 
 public interface CustomFieldsService {
@@ -74,4 +75,13 @@ public interface CustomFieldsService {
    * @param tenantId - tenant id
    */
   Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId);
+
+  /**
+   * Retrieves statistic of specific custom field option usage. Can be processed only for selectable fields.
+   *
+   * @param id       - id of custom field
+   * @param optId    - id of custom field option
+   * @param tenantId - tenant id
+   */
+  Future<CustomFieldOptionStatistic> retrieveOptionStatistic(String id, String optId, String tenantId);
 }
