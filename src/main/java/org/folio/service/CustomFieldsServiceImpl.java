@@ -50,6 +50,7 @@ import org.folio.model.RecordUpdate;
 import org.folio.repository.CustomFieldsRepository;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.SelectFieldOption;
 import org.folio.rest.jaxrs.model.SelectFieldOptions;
@@ -67,6 +68,10 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private static final String TYPE_CHANGING_MESSAGE =
     "The type of the custom field can not be changed: newType = %s, oldType = %s";
+  private static final String NOT_SELECTABLE_TYPE_MESSAGE = "The type of the custom field must be one of:"
+    + "SINGLE_SELECT_DROPDOWN, MULTI_SELECT_DROPDOWN, RADIO_BUTTON";
+  private static final String MISSED_OPTION_MESSAGE = "Option with id '%s' not found in custom field '%s'";
+
   @Autowired
   private CustomFieldsRepository repository;
   @Autowired
@@ -150,6 +155,20 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   public Future<CustomFieldStatistic> retrieveStatistic(String id, String tenantId) {
     return findById(id, tenantId)
       .compose(field -> recordService.retrieveStatistic(field, tenantId));
+  }
+
+  @Override
+  public Future<CustomFieldOptionStatistic> retrieveOptionStatistic(String id, String optId, String tenantId) {
+    return findById(id, tenantId)
+      .compose(field -> {
+          Validation validation = Validation.instance()
+            .addTest(field, isSelectable())
+            .addTest(field, hasOptionWithId(optId));
+
+          return validation.validate()
+            .compose(aVoid -> recordService.retrieveOptionStatistic(field, optId, tenantId));
+        }
+      );
   }
 
   private List<String> getOptionsIdsToDelete(CustomField newCustomField, CustomField oldCustomField) {
@@ -237,6 +256,24 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
     return type -> validateValueNotChanged(TYPE_ATTRIBUTE, type, oldType, TYPE_CHANGING_MESSAGE, type, oldType);
+  }
+
+  private Consumer<CustomField> isSelectable() {
+    return field -> {
+      if (!isSelectableCustomFieldType(field)) {
+        throw new InvalidFieldValueException(TYPE_ATTRIBUTE, field.getType(), NOT_SELECTABLE_TYPE_MESSAGE);
+      }
+    };
+  }
+
+  private Consumer<CustomField> hasOptionWithId(String optId) {
+    return field -> {
+      if (!extractOptionIds(field).contains(optId)) {
+        throw new InvalidFieldValueException("optId", field.getSelectField().getOptions(),
+          String.format(MISSED_OPTION_MESSAGE, optId, field.getId())
+        );
+      }
+    };
   }
 
   private <T> void validateValueNotChanged(String field, T newValue, T oldValue, String message, Object... values) {

@@ -80,4 +80,8 @@ public class CustomFieldsTestUtil {
   public static String itemStatResourcePath(String id) {
     return itemResourcePath(id) + "/stats";
   }
+
+  public static String itemOptionStatResourcePath(String id, String optId) {
+    return itemResourcePath(id) + "/options/" + optId + "/stats";
+  }
 }

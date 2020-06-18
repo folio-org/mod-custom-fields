@@ -22,6 +22,7 @@ import org.junit.rules.TestRule;
 
 import org.folio.model.RecordUpdate;
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.test.junit.TestStartLoggingRule;
 
@@ -75,6 +76,20 @@ public class NoOpRecordServiceTest {
     assertTrue(stat.succeeded());
     assertEquals(stat.result(), new CustomFieldStatistic()
       .withFieldId(field.getId())
+      .withEntityType(field.getEntityType())
+      .withCount(0));
+  }
+
+  @Test
+  public void shouldReturnEmptyOptionStatistic() {
+    String optionId = "opt_0";
+    Future<CustomFieldOptionStatistic> stat = service.retrieveOptionStatistic(field, optionId, tenantId);
+
+    assertNotNull(stat);
+    assertTrue(stat.succeeded());
+    assertEquals(stat.result(), new CustomFieldOptionStatistic()
+      .withOptionId(optionId)
+      .withCustomFieldId(field.getId())
       .withEntityType(field.getEntityType())
       .withCount(0));
   }

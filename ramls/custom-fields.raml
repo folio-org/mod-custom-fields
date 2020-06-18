@@ -20,6 +20,7 @@ types:
   putCustomFieldCollection: !include putCustomFieldCollection.json
   customField: !include customField.json
   customFieldStatistic: !include customFieldStatistic.json
+  customFieldOptionStatistic: !include customFieldOptionStatistic.json
   errors: !include raml-util/schemas/errors.schema
 
 traits:
@@ -96,6 +97,34 @@ resourceTypes:
                 example:
                   strict: false
                   value: !include examples/customFieldStatistic.sample
+          401:
+            description: "Not authorized to perform requested action"
+            body:
+              text/plain:
+                example: "Unable to get retrieve statistic -- unauthorized"
+          404:
+            description: "Custom field with the given id is not found"
+            body:
+              text/plain:
+                example: "Custom field not found"
+          500:
+            description: "Internal server error, e.g. due to misconfiguration"
+            body:
+              text/plain:
+                example: "Internal server error, contact administrator"
+    /options/{optId}/stats:
+      displayName: Custom field option usage statistic
+      get:
+        description: Returns usage statistic of custom field option with the given optId
+        responses:
+          200:
+            description: Returns usage statistic of custom field option with the given optId
+            body:
+              application/json:
+                type: customFieldOptionStatistic
+                example:
+                  strict: false
+                  value: !include examples/customFieldOptionStatistic.sample
           401:
             description: "Not authorized to perform requested action"
             body:

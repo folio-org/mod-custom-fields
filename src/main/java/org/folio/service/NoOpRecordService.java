@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 
 import org.folio.model.RecordUpdate;
 import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 
 public final class NoOpRecordService implements RecordService {
@@ -15,6 +16,17 @@ public final class NoOpRecordService implements RecordService {
     return succeededFuture(
       new CustomFieldStatistic()
         .withFieldId(field.getId())
+        .withEntityType(field.getEntityType())
+        .withCount(0)
+    );
+  }
+
+  @Override
+  public Future<CustomFieldOptionStatistic> retrieveOptionStatistic(CustomField field, String optId, String tenantId) {
+    return succeededFuture(
+      new CustomFieldOptionStatistic()
+        .withOptionId(optId)
+        .withCustomFieldId(field.getId())
         .withEntityType(field.getEntityType())
         .withCount(0)
     );

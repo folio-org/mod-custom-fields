@@ -24,6 +24,7 @@ import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.PutCustomFieldCollection;
 import org.folio.rest.jaxrs.resource.CustomFields;
@@ -121,5 +122,19 @@ public class CustomFieldsImpl implements CustomFields {
     Future<CustomFieldStatistic> stats = customFieldsService.retrieveStatistic(id, tenantId(okapiHeaders));
 
     respond(stats, GetCustomFieldsStatsByIdResponse::respond200WithApplicationJson, asyncResultHandler, excHandler);
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getCustomFieldsOptionsStatsByIdAndOptId(String id, String optId, Map<String, String> okapiHeaders,
+                                                      Handler<AsyncResult<Response>> asyncResultHandler,
+                                                      Context vertxContext) {
+    Future<CustomFieldOptionStatistic> optionStatResult = customFieldsService
+      .retrieveOptionStatistic(id, optId, tenantId(okapiHeaders));
+
+    respond(optionStatResult,
+      GetCustomFieldsOptionsStatsByIdAndOptIdResponse::respond200WithApplicationJson,
+      asyncResultHandler, excHandler);
   }
 }
