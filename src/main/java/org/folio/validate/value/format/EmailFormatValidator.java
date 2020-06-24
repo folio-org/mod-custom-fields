@@ -12,32 +12,32 @@ public class EmailFormatValidator implements FormatValidator {
   private static final String INVALID_FORMAT_MESSAGE = "Invalid Email format: %s";
 
   private static final String ATOM = "[a-z0-9!#$%&'*+/=?^_`{|}~-]";
-  private static final String DOMAIN = ATOM + "+(\\." + ATOM + "+)*";
+  private static final String EMAIL_PART = ATOM + "+(\\." + ATOM + "+)*";
   private static final String IP_DOMAIN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}]";
+  private static final String DOMAIN_PART = EMAIL_PART + "\\." + ATOM + "+" + "|" + IP_DOMAIN;
+
+  private static final Pattern LOCAL_PATTERN = Pattern.compile(EMAIL_PART, CASE_INSENSITIVE);
+  private static final Pattern DOMAIN_PATTERN = Pattern.compile(DOMAIN_PART, CASE_INSENSITIVE);
+
   private static final int MAX_LOCAL_PART_LENGTH = 64;
   private static final int MAX_DOMAIN_PART_LENGTH = 255;
 
-  private static final Pattern LOCAL_PATTERN = java.util.regex.Pattern.compile(
-    ATOM + "+(\\." + ATOM + "+)*", CASE_INSENSITIVE
-  );
-
-  private static final Pattern DOMAIN_PATTERN = java.util.regex.Pattern.compile(
-    DOMAIN + "|" + IP_DOMAIN, CASE_INSENSITIVE
-  );
-
   @Override
   public void validate(String value) {
+    if (!isValidEmail(value)) {
+      throw new IllegalArgumentException(String.format(INVALID_FORMAT_MESSAGE, value));
+    }
+  }
+
+  private boolean isValidEmail(String value) {
     if (StringUtils.isNotBlank(value)) {
       String[] emailParts = value.split("@");
-      if (emailParts.length == 2
+      return emailParts.length == 2
         && !hasTrailingDot(emailParts)
         && isValidLocalPart(emailParts[0])
-        && isValidDomainPart(emailParts[1])
-      ) {
-        return;
-      }
+        && isValidDomainPart(emailParts[1]);
     }
-    throw new IllegalArgumentException(String.format(INVALID_FORMAT_MESSAGE, value));
+    return false;
   }
 
   private boolean isValidDomainPart(String emailPart) {

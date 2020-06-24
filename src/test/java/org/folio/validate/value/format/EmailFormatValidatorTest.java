@@ -37,6 +37,7 @@ public class EmailFormatValidatorTest {
       "@a.com",
       "email@",
       "email@.com",
+      "email@example",
       "email",
       "em@il@ex@mle.com",
       StringUtils.repeat('a', 65) + "@example.com",

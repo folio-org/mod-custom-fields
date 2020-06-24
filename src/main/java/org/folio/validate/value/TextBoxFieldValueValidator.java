@@ -25,15 +25,16 @@ import org.folio.validate.value.format.URLFormatValidator;
 @Component
 public class TextBoxFieldValueValidator implements CustomFieldValueValidator {
 
-  @Value("${custom.fields.value.textbox.short.length}")
-  private int textBoxShortLengthLimit;
-
-  @Value("${custom.fields.value.textbox.long.length}")
-  private int textBoxLongLengthLimit;
+  private final int textBoxShortLengthLimit;
+  private final int textBoxLongLengthLimit;
 
   private final Map<TextField.FieldFormat, FormatValidator> formatValidators;
 
-  {
+  public TextBoxFieldValueValidator(@Value("${custom.fields.value.textbox.short.length}") int textBoxShortLengthLimit,
+                                    @Value("${custom.fields.value.textbox.long.length}") int textBoxLongLengthLimit) {
+    this.textBoxShortLengthLimit = textBoxShortLengthLimit;
+    this.textBoxLongLengthLimit = textBoxLongLengthLimit;
+
     formatValidators = new HashedMap<>();
     formatValidators.put(TextField.FieldFormat.TEXT, new TextFormatValidator());
     formatValidators.put(TextField.FieldFormat.EMAIL, new EmailFormatValidator());
