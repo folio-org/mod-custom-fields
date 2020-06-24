@@ -17,6 +17,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +63,7 @@ import org.folio.service.exc.ServiceExceptions;
 public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private static final String ALL_RECORDS_QUERY = "cql.allRecords=1";
-  private static final String ORDER_ATTRIBUTE = "order";
+  private static final String ORDER_ATTRIBUTE = "order/number";
   private static final String TYPE_ATTRIBUTE = "type";
 
   private static final String TYPE_CHANGING_MESSAGE =
@@ -281,8 +282,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private List<CustomField> updateCustomFieldsOrder(CustomFieldCollection customFieldsCollection) {
-    final List<CustomField> customFields = customFieldsCollection.getCustomFields();
-    customFields.sort(comparing(CustomField::getOrder));
+    final List<CustomField> customFields = sortByOrder(customFieldsCollection).getCustomFields();
     for (int i = 0; i < customFields.size(); i++) {
       customFields.get(i).setOrder(i + 1);
     }
@@ -348,6 +348,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
       throw new IllegalArgumentException("Unsupported Query Format : Search query is in an unsupported format: " + cqlQuery,
         e);
     }
+  }
+
+  private CustomFieldCollection sortByOrder(CustomFieldCollection collection) {
+    collection.getCustomFields().sort(Comparator.comparingInt(CustomField::getOrder));
+    return collection;
   }
 
   private void generateOptionIds(CustomField field) {

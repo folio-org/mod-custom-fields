@@ -95,11 +95,40 @@ public class CustomFieldsImplTest extends TestBase {
   }
 
   @Test
+  public void shouldCreateCustomFieldWithRefIdsOnPost() throws IOException, URISyntaxException {
+
+    for (int i = 0; i < 10; i++) {
+      createCustomField(readFile("fields/post/postCustomField.json"));
+    }
+
+    CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH + "?limit=500&offset0").as(CustomFieldCollection.class);
+    final List<CustomField> customFields = fields.getCustomFields();
+    for (int i = 0; i < customFields.size(); i++) {
+      assertTrue(customFields.get(i).getRefId().contains(String.valueOf(i + 1)));
+    }
+  }
+
+
+  @Test
   public void shouldCreateCustomFieldWithLastOrderOnPost() throws IOException, URISyntaxException {
     CustomField customField1 = createCustomField(readFile("fields/post/postCustomField.json"));
     CustomField customField2 = createCustomField(readFile("fields/post/postCustomField2.json"));
     assertEquals(1, (int) customField1.getOrder());
     assertEquals(2, (int) customField2.getOrder());
+  }
+
+  @Test
+  public void shouldCreateCustomFieldWithOrderOnPost() throws IOException, URISyntaxException {
+
+    for (int i = 0; i < 10; i++) {
+      createCustomField(readFile("fields/post/postCustomField.json"));
+    }
+
+    CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH).as(CustomFieldCollection.class);
+    final List<CustomField> customFields = fields.getCustomFields();
+    for (int i = 0; i < customFields.size(); i++) {
+      assertEquals(i + 1, (int) customFields.get(i).getOrder());
+    }
   }
 
   @Test

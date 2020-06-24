@@ -9,7 +9,7 @@ public final class CustomFieldsConstants {
   public static final String JSONB_COLUMN = "jsonb";
   public static final String ID_COLUMN = "id";
 
-  public static final String REF_ID_REGEX = "%s_[1-9]+";
+  public static final String REF_ID_REGEX = "%s_[0-9].*";
   public static final String SELECT_REF_IDS = "SELECT unnest(regexp_matches(" + JSONB_COLUMN + " ->> 'refId', $1)) as "
     + VALUES_COLUMN + " FROM %s";
   public static final String SELECT_MAX_ORDER = "SELECT MAX((jsonb ->> 'order')::int) as " + MAX_ORDER_COLUMN + " FROM %s";
