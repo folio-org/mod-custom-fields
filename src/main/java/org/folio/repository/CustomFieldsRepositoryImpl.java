@@ -165,12 +165,8 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
   private Integer mapMaxRefId(RowSet<Row> rowSet) {
     return RowSetUtils.streamOf(rowSet)
       .map(row -> row.getString(VALUES_COLUMN))
-      .mapToInt(this::toRefIdIndex)
+      .mapToInt(Integer::parseInt)
       .max().orElse(0);
-  }
-
-  private int toRefIdIndex(String value) {
-    return Integer.parseInt(value.substring(value.indexOf('_') + 1));
   }
 
   private Integer mapMaxOrder(Row result) {
