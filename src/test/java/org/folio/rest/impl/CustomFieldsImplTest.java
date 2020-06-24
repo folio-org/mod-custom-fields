@@ -27,6 +27,7 @@ import static org.folio.CustomFieldsTestUtil.USER3_ID;
 import static org.folio.CustomFieldsTestUtil.USER4_ID;
 import static org.folio.CustomFieldsTestUtil.deleteAllCustomFields;
 import static org.folio.CustomFieldsTestUtil.getAllCustomFields;
+import static org.folio.CustomFieldsTestUtil.itemOptionStatResourcePath;
 import static org.folio.CustomFieldsTestUtil.itemResourcePath;
 import static org.folio.CustomFieldsTestUtil.itemStatResourcePath;
 import static org.folio.CustomFieldsTestUtil.mockUserRequests;
@@ -49,6 +50,7 @@ import org.junit.runner.RunWith;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.jaxrs.model.CustomField;
 import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
@@ -514,6 +516,47 @@ public class CustomFieldsImplTest extends TestBase {
       .withFieldId(field.getId())
       .withEntityType(field.getEntityType())
       .withCount(0));
+  }
+
+  @Test
+  public void shouldReturnEmptyOptionStatsForExistingField() throws IOException, URISyntaxException {
+    CustomField field = createCustomField(readFile("fields/post/singleSelect/postValidSingleSelect.json"));
+    String optId = field.getSelectField().getOptions().getValues().get(0).getId();
+    String resourcePath = itemOptionStatResourcePath(field.getId(), optId);
+    CustomFieldOptionStatistic stats = getWithOk(resourcePath).as(CustomFieldOptionStatistic.class);
+
+    assertEquals(stats, new CustomFieldOptionStatistic()
+      .withOptionId(optId)
+      .withCustomFieldId(field.getId())
+      .withEntityType(field.getEntityType())
+      .withCount(0));
+  }
+
+  @Test
+  @SuppressWarnings("squid:S2699")
+  public void shouldReturn404OnGetOptionStatsForNotExistingField() {
+    String fakeFieldId = "11111111-2222-3333-a444-555555555555";
+    String fakeOptId = "opt_0";
+    String resourcePath = itemOptionStatResourcePath(fakeFieldId, fakeOptId);
+    getWithStatus(resourcePath, SC_NOT_FOUND);
+  }
+
+  @Test
+  @SuppressWarnings("squid:S2699")
+  public void shouldReturn422OnGetOptionStatsForNotSelectableField() throws IOException, URISyntaxException {
+    CustomField field = createCustomField(readFile("fields/post/postCustomField.json"));
+    String fakeOptId = "opt_0";
+    String resourcePath = itemOptionStatResourcePath(field.getId(), fakeOptId);
+    getWithStatus(resourcePath, SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  @SuppressWarnings("squid:S2699")
+  public void shouldReturn422OnGetOptionStatsForNotExistingFieldOption() throws IOException, URISyntaxException {
+    CustomField field = createCustomField(readFile("fields/post/singleSelect/postValidSingleSelect.json"));
+    String fakeOptId = "opt_10";
+    String resourcePath = itemOptionStatResourcePath(field.getId(), fakeOptId);
+    getWithStatus(resourcePath, SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test
