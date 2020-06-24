@@ -28,6 +28,10 @@ final class AllowedFieldsConstants {
     .addAll(COMMON_ALLOWED_FIELDS).add("selectField")
     .build();
 
+  static final Set<String> TEXTBOX_ALLOWED_FIELDS = new ImmutableSet.Builder<String>()
+    .addAll(COMMON_ALLOWED_FIELDS).add("textField")
+    .build();
+
   private AllowedFieldsConstants() {
 
   }

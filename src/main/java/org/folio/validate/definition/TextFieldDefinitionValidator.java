@@ -1,6 +1,6 @@
 package org.folio.validate.definition;
 
-import static org.folio.validate.definition.AllowedFieldsConstants.COMMON_ALLOWED_FIELDS;
+import static org.folio.validate.definition.AllowedFieldsConstants.TEXTBOX_ALLOWED_FIELDS;
 
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ public class TextFieldDefinitionValidator implements Validatable {
 
   @Override
   public void validateDefinition(CustomField fieldDefinition) {
-    CustomDefinitionValidationUtil.onlyHasAllowedFields(fieldDefinition, COMMON_ALLOWED_FIELDS);
+    CustomDefinitionValidationUtil.onlyHasAllowedFields(fieldDefinition, TEXTBOX_ALLOWED_FIELDS);
   }
 
   @Override
