@@ -6,5 +6,8 @@
   "required": true,
   "isRepeatable": true,
   "entityType": "user",
-  "helpText": "Set text"
+  "helpText": "Set text",
+  "textField": {
+    "fieldFormat": "TEXT"
+  }
 }

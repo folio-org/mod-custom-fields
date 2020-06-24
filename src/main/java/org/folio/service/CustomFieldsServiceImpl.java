@@ -206,9 +206,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private Future<CustomField> save(CustomField customField, OkapiParams params,
                                    @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
-    if (isTextBoxCustomFieldType(customField) && customField.getTextField() == null) {
-      customField.setTextField(new TextField().withFieldFormat(TextField.FieldFormat.TEXT));
-    }
+    setDefaultFormat(customField);
     if (isSelectableCustomFieldType(customField)) {
       sortOptions(customField);
       generateOptionIds(customField);
@@ -226,6 +224,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     customField.setId(oldCustomField.getId());
     customField.setRefId(oldCustomField.getRefId());
     customField.setOrder(oldCustomField.getOrder());
+    setDefaultFormat(customField);
 
     RecordUpdate recordUpdate = createRecordUpdate(customField, oldCustomField);
 
@@ -245,6 +244,12 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
           return Future.succeededFuture(aVoid);
         }
       });
+  }
+
+  private void setDefaultFormat(CustomField customField) {
+    if (isTextBoxCustomFieldType(customField) && customField.getTextField() == null) {
+      customField.setTextField(new TextField().withFieldFormat(TextField.FieldFormat.TEXT));
+    }
   }
 
   private boolean isRequiredRecordUpdate(RecordUpdate recordUpdate) {

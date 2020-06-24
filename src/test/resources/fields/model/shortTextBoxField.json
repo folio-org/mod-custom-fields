@@ -5,5 +5,8 @@
   "visible": true,
   "required": true,
   "entityType": "user",
-  "helpText": "Set text"
+  "helpText": "Set text",
+  "textField": {
+    "fieldFormat": "TEXT"
+  }
 }
