@@ -11,6 +11,7 @@ import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
 import static org.folio.service.CustomFieldUtils.extractDefaultOptionIds;
 import static org.folio.service.CustomFieldUtils.extractOptionIds;
 import static org.folio.service.CustomFieldUtils.isSelectableCustomFieldType;
+import static org.folio.service.CustomFieldUtils.isTextBoxCustomFieldType;
 
 import java.io.IOException;
 import java.text.Normalizer;
@@ -54,6 +55,7 @@ import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.SelectFieldOption;
 import org.folio.rest.jaxrs.model.SelectFieldOptions;
+import org.folio.rest.jaxrs.model.TextField;
 import org.folio.rest.persist.SQLConnection;
 import org.folio.rest.validate.Validation;
 import org.folio.service.exc.InvalidFieldValueException;
@@ -63,6 +65,7 @@ import org.folio.service.exc.ServiceExceptions;
 public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private static final String ALL_RECORDS_QUERY = "cql.allRecords=1";
+  private static final String FORMAT_ATTRIBUTE = "fieldFormat";
   private static final String ORDER_ATTRIBUTE = "order";
   private static final String TYPE_ATTRIBUTE = "type";
 
@@ -71,6 +74,8 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private static final String NOT_SELECTABLE_TYPE_MESSAGE = "The type of the custom field must be one of:"
     + "SINGLE_SELECT_DROPDOWN, MULTI_SELECT_DROPDOWN, RADIO_BUTTON";
   private static final String MISSED_OPTION_MESSAGE = "Option with id '%s' not found in custom field '%s'";
+  private static final String FORMAT_CHANGING_MESSAGE =
+    "The format of the custom field can not be changed: newFormat = %s, oldFormat = %s";
 
   @Autowired
   private CustomFieldsRepository repository;
@@ -201,6 +206,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   private Future<CustomField> save(CustomField customField, OkapiParams params,
                                    @Nullable AsyncResult<SQLConnection> connection) {
     final String unAccentName = unAccentName(customField.getName());
+    setDefaultFormat(customField);
     if (isSelectableCustomFieldType(customField)) {
       sortOptions(customField);
       generateOptionIds(customField);
@@ -218,11 +224,13 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     customField.setId(oldCustomField.getId());
     customField.setRefId(oldCustomField.getRefId());
     customField.setOrder(oldCustomField.getOrder());
+    setDefaultFormat(customField);
 
     RecordUpdate recordUpdate = createRecordUpdate(customField, oldCustomField);
 
     Future<Void> validated = Validation.instance()
       .addTest(customField.getType(), typeNotChanged(oldCustomField.getType()))
+      .addTest(customField, formatNotChanged(oldCustomField))
       .validate();
 
     return validated
@@ -236,6 +244,12 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
           return Future.succeededFuture(aVoid);
         }
       });
+  }
+
+  private void setDefaultFormat(CustomField customField) {
+    if (isTextBoxCustomFieldType(customField) && customField.getTextField() == null) {
+      customField.setTextField(new TextField().withFieldFormat(TextField.FieldFormat.TEXT));
+    }
   }
 
   private boolean isRequiredRecordUpdate(RecordUpdate recordUpdate) {
@@ -256,6 +270,17 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private Consumer<CustomField.Type> typeNotChanged(CustomField.Type oldType) {
     return type -> validateValueNotChanged(TYPE_ATTRIBUTE, type, oldType, TYPE_CHANGING_MESSAGE, type, oldType);
+  }
+
+  private Consumer<CustomField> formatNotChanged(CustomField oldTextField) {
+    return field -> {
+      if (isTextBoxCustomFieldType(field)) {
+        TextField.FieldFormat oldFieldFormat = oldTextField.getTextField().getFieldFormat();
+        TextField.FieldFormat newFieldFormat = field.getTextField().getFieldFormat();
+        validateValueNotChanged(FORMAT_ATTRIBUTE, newFieldFormat, oldFieldFormat,
+          FORMAT_CHANGING_MESSAGE, newFieldFormat, oldFieldFormat);
+      }
+    };
   }
 
   private Consumer<CustomField> isSelectable() {
