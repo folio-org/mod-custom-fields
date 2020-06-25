@@ -54,6 +54,7 @@ import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
 import org.folio.rest.jaxrs.model.CustomFieldStatistic;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Metadata;
+import org.folio.rest.jaxrs.model.TextField;
 import org.folio.test.util.TestBase;
 
 @RunWith(VertxUnitRunner.class)
@@ -78,6 +79,20 @@ public class CustomFieldsImplTest extends TestBase {
 
     assertEquals(USER1_ID, noteTypeMetadata.getCreatedByUserId());
     assertEquals("u1", noteTypeMetadata.getCreatedByUsername());
+  }
+
+  @Test
+  public void postTextboxCustomFieldWithEmptyFormat() throws IOException, URISyntaxException {
+    CustomField customField = createCustomField(readFile("fields/post/textbox/postTextBoxShort.json"));
+    assertNotNull(customField.getTextField());
+    assertEquals(TextField.FieldFormat.TEXT, customField.getTextField().getFieldFormat());
+  }
+
+  @Test
+  public void postTextboxCustomFieldWithEmailFormat() throws IOException, URISyntaxException {
+    CustomField customField = createCustomField(readFile("fields/post/textbox/postTextBoxEmailShort.json"));
+    assertNotNull(customField.getTextField());
+    assertEquals(TextField.FieldFormat.EMAIL, customField.getTextField().getFieldFormat());
   }
 
   @Test
@@ -392,6 +407,19 @@ public class CustomFieldsImplTest extends TestBase {
     String resourcePath = itemResourcePath(customField.getId());
     String error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).asString();
     assertThat(error, containsString("may not be null"));
+  }
+
+  @Test
+  public void shouldReturn422WhenFieldFormatIsNullOnPut() throws IOException, URISyntaxException {
+    CustomField field = readJsonFile("fields/post/textbox/postTextBoxShort.json", CustomField.class);
+    String postBody = Json.encode(field);
+    CustomField fieldWithEmailFormat = field.withTextField(new TextField().withFieldFormat(TextField.FieldFormat.EMAIL));
+    String putBody = Json.encode(fieldWithEmailFormat);
+
+    CustomField customField = createCustomField(postBody);
+    String resourcePath = itemResourcePath(customField.getId());
+    String error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).asString();
+    assertThat(error, containsString("The format of the custom field can not be changed"));
   }
 
   @Test

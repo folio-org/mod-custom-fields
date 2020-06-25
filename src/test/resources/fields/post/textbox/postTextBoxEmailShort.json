@@ -1,13 +1,11 @@
 {
   "name": "Short Text box field",
   "type": "TEXTBOX_SHORT",
-  "refId": "textbox-field",
   "visible": true,
   "required": true,
-  "isRepeatable": true,
   "entityType": "user",
-  "helpText": "Set text",
+  "helpText": "Help text",
   "textField": {
-    "fieldFormat": "TEXT"
+    "fieldFormat": "EMAIL"
   }
 }

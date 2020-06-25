@@ -71,6 +71,11 @@
       "description": "Select field properties",
       "$ref": "selectField.json"
     },
+    "textField": {
+      "type": "object",
+      "description": "Text field properties",
+      "$ref": "textField.json"
+    },
     "metadata": {
       "description": "User metadata information",
       "$ref": "raml-util/schemas/metadata.schema",

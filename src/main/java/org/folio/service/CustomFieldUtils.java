@@ -35,6 +35,11 @@ public final class CustomFieldUtils {
       || CustomField.Type.RADIO_BUTTON.equals(type);
   }
 
+  public static boolean isTextBoxCustomFieldType(CustomField customField) {
+    CustomField.Type type = customField.getType();
+    return CustomField.Type.TEXTBOX_LONG.equals(type) || CustomField.Type.TEXTBOX_SHORT.equals(type);
+  }
+
   private static <T> List<T> extractOptionParameter(CustomField cf, Function<SelectFieldOption, T> extractFunction) {
     if (isSelectableCustomFieldType(cf)) {
       return cf.getSelectField().getOptions().getValues().stream()
