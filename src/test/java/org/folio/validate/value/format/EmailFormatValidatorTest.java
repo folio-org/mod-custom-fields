@@ -22,10 +22,8 @@ public class EmailFormatValidatorTest {
     return new String[] {
       "email@example.com",
       "e@example.com",
-      "email@127.0.0.1",
       "!#$%&'*+-/=?^_`.{|}~@example.com",
-      "email@example-new.com",
-      "email@!#$%&'*+-/=?^_`.{|}~.com"
+      "email@example-new.com"
     };
   }
 

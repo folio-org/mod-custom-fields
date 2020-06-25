@@ -1,15 +1,12 @@
 package org.folio.validate.value.format;
 
-import java.util.StringJoiner;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.RegexValidator;
 
 public class NumberFormatValidator implements FormatValidator {
 
   public static final String INVALID_FORMAT_MESSAGE = "Invalid Number format: %s";
 
-  private static final Pattern NUMBER_FORMAT;
+  private static final RegexValidator VALIDATOR;
 
   static {
     String[] formats = {
@@ -18,16 +15,12 @@ public class NumberFormatValidator implements FormatValidator {
       "(-?\\d{1,3}(\\s\\d{3})+([,|\\.]\\d+)?)",// 0 000,## | 0 000.## | -0 000,## | 0 000.##
       "(-?\\d{1,3}(,\\d{3})+(\\.\\d+)?)"       // 0,000.## | -0,000.##
     };
-    StringJoiner joiner = new StringJoiner("|", "^", "$");
-    for (String format : formats) {
-      joiner.add(format);
-    }
-    NUMBER_FORMAT = Pattern.compile(joiner.toString());
+    VALIDATOR = new RegexValidator(formats);
   }
 
   @Override
   public void validate(String value) {
-    if (StringUtils.isBlank(value) || !NUMBER_FORMAT.matcher(value).matches()) {
+    if (!VALIDATOR.isValid(value)) {
       throw new IllegalArgumentException(String.format(INVALID_FORMAT_MESSAGE, value));
     }
   }
