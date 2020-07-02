@@ -1,6 +1,14 @@
 {
   "customFields": [
     {
+      "name": "New Expiration Date",
+      "type" : "TEXTBOX_SHORT",
+      "visible": true,
+      "required": true,
+      "entityType": "package",
+      "helpText": "Set new expiration date"
+    },
+    {
       "name": "Department 2",
       "type" : "SINGLE_CHECKBOX",
       "refId": "not-null-ref-id",
@@ -11,14 +19,6 @@
       "checkboxField": {
         "default": true
       }
-    },
-    {
-      "name": "New Expiration Date",
-      "type" : "TEXTBOX_SHORT",
-      "visible": true,
-      "required": true,
-      "entityType": "package",
-      "helpText": "Set new expiration date"
     }
   ]
 }

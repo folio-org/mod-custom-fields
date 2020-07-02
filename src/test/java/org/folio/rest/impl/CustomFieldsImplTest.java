@@ -1,22 +1,32 @@
 package org.folio.rest.impl;
 
+import io.restassured.http.Header;
+import io.vertx.core.json.Json;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.jaxrs.model.Error;
+import org.folio.rest.jaxrs.model.Metadata;
+import org.folio.rest.jaxrs.model.TextField;
+import org.folio.test.util.TestBase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.CustomFieldsTestUtil.CUSTOM_FIELDS_PATH;
 import static org.folio.CustomFieldsTestUtil.STUB_FIELD_ID;
 import static org.folio.CustomFieldsTestUtil.USER1_HEADER;
@@ -34,28 +44,18 @@ import static org.folio.CustomFieldsTestUtil.mockUserRequests;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.test.util.TokenTestUtil.createTokenHeader;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Comparator;
-import java.util.List;
-
-import io.restassured.http.Header;
-import io.vertx.core.json.Json;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
-import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.folio.rest.jaxrs.model.Error;
-import org.folio.rest.jaxrs.model.Metadata;
-import org.folio.rest.jaxrs.model.TextField;
-import org.folio.test.util.TestBase;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(VertxUnitRunner.class)
 public class CustomFieldsImplTest extends TestBase {
@@ -424,42 +424,136 @@ public class CustomFieldsImplTest extends TestBase {
 
   @Test
   public void shouldUpdateAllCustomFields() throws IOException, URISyntaxException {
-    CustomField createdField = createCustomField(readFile("fields/post/postCustomField.json"));
+    final CustomField field1 = createCustomField(readFile("fields/post/postCustomField.json"));
     createCustomField(readFile("fields/post/postCustomField2.json"));
 
+    List<CustomField> customFieldBeforeUpdate = getAllCustomFields(vertx);
+    customFieldBeforeUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstField = customFieldBeforeUpdate.get(0);
+    CustomField secondField = customFieldBeforeUpdate.get(1);
+    assertEquals(1, (int) firstField.getOrder());
+    assertEquals(2, (int) secondField.getOrder());
+
     CustomFieldCollection request = readJsonFile("fields/put/putCustomFieldCollection.json", CustomFieldCollection.class);
-    request.getCustomFields().get(0).setId(createdField.getId());
+    request.getCustomFields().get(1).setId(field1.getId());
     putWithNoContent(CUSTOM_FIELDS_PATH, Json.encode(request), USER2_HEADER);
 
-    List<CustomField> customFields = getAllCustomFields(vertx);
-    customFields.sort(Comparator.comparing(CustomField::getOrder));
-    CustomField firstField = customFields.get(0);
-    assertEquals("Department 2", firstField.getName());
-    assertEquals("department_1", firstField.getRefId());
-    assertEquals("Provide a second department", firstField.getHelpText());
-    assertEquals(false, firstField.getRequired());
-    assertEquals(false, firstField.getVisible());
-    assertEquals(1, (int) firstField.getOrder());
-    assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
-    Metadata firstFieldMetadata = firstField.getMetadata();
-    assertEquals(USER1_ID, firstFieldMetadata.getCreatedByUserId());
-    assertEquals("u1", firstFieldMetadata.getCreatedByUsername());
-    assertEquals(USER2_ID, firstFieldMetadata.getUpdatedByUserId());
-    assertEquals("u2", firstFieldMetadata.getUpdatedByUsername());
+    List<CustomField> customFieldsAfterUpdate = getAllCustomFields(vertx);
+    customFieldsAfterUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
 
-    CustomField secondField = customFields.get(1);
-    assertEquals("New Expiration Date", secondField.getName());
-    assertEquals("new-expiration-date_1", secondField.getRefId());
-    assertEquals("Set new expiration date", secondField.getHelpText());
-    assertEquals(true, secondField.getRequired());
-    assertEquals(true, secondField.getVisible());
+    CustomField firstFieldUpdated = customFieldsAfterUpdate.get(0);
+    assertEquals("New Expiration Date", firstFieldUpdated.getName());
+    assertEquals("new-expiration-date_1", firstFieldUpdated.getRefId());
+    assertEquals("Set new expiration date", firstFieldUpdated.getHelpText());
+    assertEquals(true, firstFieldUpdated.getRequired());
+    assertEquals(true, firstFieldUpdated.getVisible());
+    assertEquals(1, (int) firstFieldUpdated.getOrder());
+    assertEquals(CustomField.Type.TEXTBOX_SHORT, firstFieldUpdated.getType());
+    Metadata firstFieldUpdatedMetadata = firstFieldUpdated.getMetadata();
+    assertEquals(USER2_ID, firstFieldUpdatedMetadata.getCreatedByUserId());
+    assertEquals("u2", firstFieldUpdatedMetadata.getCreatedByUsername());
+    assertEquals(USER2_ID, firstFieldUpdatedMetadata.getUpdatedByUserId());
+    assertEquals("u2", firstFieldUpdatedMetadata.getUpdatedByUsername());
+
+    CustomField secondFieldUpdated = customFieldsAfterUpdate.get(1);
+    assertEquals("Department 2", secondFieldUpdated.getName());
+    assertEquals("department_1", secondFieldUpdated.getRefId());
+    assertEquals("Provide a second department", secondFieldUpdated.getHelpText());
+    assertEquals(false, secondFieldUpdated.getRequired());
+    assertEquals(false, secondFieldUpdated.getVisible());
+    assertEquals(2, (int) secondFieldUpdated.getOrder());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, secondFieldUpdated.getType());
+    Metadata secondFieldUpdatedMetadata = secondFieldUpdated.getMetadata();
+    assertEquals(USER1_ID, secondFieldUpdatedMetadata.getCreatedByUserId());
+    assertEquals("u1", secondFieldUpdatedMetadata.getCreatedByUsername());
+    assertEquals(USER2_ID, secondFieldUpdatedMetadata.getUpdatedByUserId());
+    assertEquals("u2", secondFieldUpdatedMetadata.getUpdatedByUsername());
+  }
+
+  @Test
+  public void shouldUpdateCustomFieldsWhenReOrderAndFieldRemoved() throws IOException, URISyntaxException {
+    createCustomField(readFile("fields/post/postCustomField.json"));
+    final CustomField field2 = createCustomField(readFile("fields/post/postCustomField2.json"));
+    final CustomField field3 = createCustomField(readFile("fields/post/postCustomField2.json"));
+
+    List<CustomField> customFieldBeforeUpdate = getAllCustomFields(vertx);
+    customFieldBeforeUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstField = customFieldBeforeUpdate.get(0);
+    CustomField secondField = customFieldBeforeUpdate.get(1);
+    CustomField thirdField = customFieldBeforeUpdate.get(2);
+
+    assertEquals(3, customFieldBeforeUpdate.size());
+    assertEquals(1, (int) firstField.getOrder());
     assertEquals(2, (int) secondField.getOrder());
+    assertEquals(3, (int) thirdField.getOrder());
+
+    final String cfNameUpdated = "Expiration Date updated";
+    field2.setName(cfNameUpdated);
+    field3.setRefId("some-ref-id_1");
+    CustomFieldCollection request = new CustomFieldCollection().withCustomFields(Arrays.asList(field3, field2));
+    putWithNoContent(CUSTOM_FIELDS_PATH, Json.encode(request), USER2_HEADER);
+
+    List<CustomField> customFieldsAfterUpdate = getAllCustomFields(vertx);
+    customFieldsAfterUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstFieldUpdated = customFieldsAfterUpdate.get(0);
+    CustomField secondFieldUpdated = customFieldsAfterUpdate.get(1);
+    assertEquals(2, customFieldsAfterUpdate.size());
+
+    assertEquals(1, (int) firstFieldUpdated.getOrder());
+    assertEquals("expiration-date_2",  firstFieldUpdated.getRefId());
+
+    assertEquals(2, (int) secondFieldUpdated.getOrder());
+    assertEquals(cfNameUpdated, secondFieldUpdated.getName());
+  }
+
+  @Test
+  public void shouldCreateCustomFieldWhenIdIsEmptyAndDeleteOldOnCollectionPut() throws IOException, URISyntaxException {
+    final CustomField field1 = createCustomField(readFile("fields/post/postCustomField.json"));
+    final CustomField field2 = createCustomField(readFile("fields/post/postCustomField2.json"));
+    String field2Id = field2.getId();
+
+    List<CustomField> customFieldBeforeUpdate = getAllCustomFields(vertx);
+    customFieldBeforeUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstField = customFieldBeforeUpdate.get(0);
+    CustomField secondField = customFieldBeforeUpdate.get(1);
+    assertEquals(2, customFieldBeforeUpdate.size());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
     assertEquals(CustomField.Type.TEXTBOX_SHORT, secondField.getType());
-    Metadata secondFieldMetadata = secondField.getMetadata();
-    assertEquals(USER2_ID, secondFieldMetadata.getCreatedByUserId());
-    assertEquals("u2", secondFieldMetadata.getCreatedByUsername());
-    assertEquals(USER2_ID, secondFieldMetadata.getUpdatedByUserId());
-    assertEquals("u2", secondFieldMetadata.getUpdatedByUsername());
+
+    //update cf id
+    field2.setId(null);
+
+    CustomFieldCollection request = new CustomFieldCollection().withCustomFields(Arrays.asList(field1, field2));
+    putWithNoContent(CUSTOM_FIELDS_PATH, Json.encode(request), USER2_HEADER);
+
+    List<CustomField> customFieldsAfterUpdate = getAllCustomFields(vertx);
+    customFieldsAfterUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstFieldUpdated = customFieldsAfterUpdate.get(0);
+    CustomField secondFieldUpdated = customFieldsAfterUpdate.get(1);
+    assertEquals(2, customFieldsAfterUpdate.size());
+    assertEquals(field1.getId(), firstFieldUpdated.getId());
+    assertNotEquals(field2Id, secondFieldUpdated.getId());
+  }
+
+  @Test
+  public void shouldReturn422WhenChangedTypeOnPutCollection() throws IOException, URISyntaxException {
+    final CustomField field1 = createCustomField(readFile("fields/post/postCustomField.json"));
+    final CustomField field2 = createCustomField(readFile("fields/post/postCustomField2.json"));
+
+    List<CustomField> customFieldBeforeUpdate = getAllCustomFields(vertx);
+    customFieldBeforeUpdate.sort(Comparator.comparingInt(CustomField::getOrder));
+    CustomField firstField = customFieldBeforeUpdate.get(0);
+    CustomField secondField = customFieldBeforeUpdate.get(1);
+    assertEquals(2, customFieldBeforeUpdate.size());
+    assertEquals(CustomField.Type.SINGLE_CHECKBOX, firstField.getType());
+    assertEquals(CustomField.Type.TEXTBOX_SHORT, secondField.getType());
+
+    //update cf type
+    field2.setType(CustomField.Type.TEXTBOX_LONG);
+
+    CustomFieldCollection request = new CustomFieldCollection().withCustomFields(Arrays.asList(field1, field2));
+    String error = putWithStatus(CUSTOM_FIELDS_PATH, Json.encode(request), SC_UNPROCESSABLE_ENTITY, USER2_HEADER).asString();
+    assertThat(error, containsString("The type of the custom field can not be changed"));
   }
 
   @Test
