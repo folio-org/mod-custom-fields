@@ -1,27 +1,5 @@
 package org.folio.rest.impl;
 
-import io.restassured.http.Header;
-import io.vertx.core.json.Json;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.jaxrs.model.CustomField;
-import org.folio.rest.jaxrs.model.CustomFieldCollection;
-import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
-import org.folio.rest.jaxrs.model.CustomFieldStatistic;
-import org.folio.rest.jaxrs.model.Error;
-import org.folio.rest.jaxrs.model.Metadata;
-import org.folio.rest.jaxrs.model.TextField;
-import org.folio.test.util.TestBase;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -56,6 +34,29 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
+import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.rest.jaxrs.model.CustomField;
+import org.folio.rest.jaxrs.model.CustomFieldCollection;
+import org.folio.rest.jaxrs.model.CustomFieldOptionStatistic;
+import org.folio.rest.jaxrs.model.CustomFieldStatistic;
+import org.folio.rest.jaxrs.model.Error;
+import org.folio.rest.jaxrs.model.Metadata;
+import org.folio.rest.jaxrs.model.TextField;
+import org.folio.test.util.TestBase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import io.restassured.http.Header;
+import io.vertx.core.json.Json;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class CustomFieldsImplTest extends TestBase {

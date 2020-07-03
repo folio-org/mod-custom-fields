@@ -1,10 +1,35 @@
 package org.folio.service;
 
-import com.google.common.collect.Sets;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
+import static java.lang.String.format;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.reverseOrder;
+import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
+import static org.folio.service.CustomFieldUtils.extractDefaultOptionIds;
+import static org.folio.service.CustomFieldUtils.extractOptionIds;
+import static org.folio.service.CustomFieldUtils.isSelectableCustomFieldType;
+import static org.folio.service.CustomFieldUtils.isTextBoxCustomFieldType;
+
+import java.io.IOException;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.common.OkapiParams;
@@ -30,34 +55,12 @@ import org.z3950.zing.cql.CQLParser;
 import org.z3950.zing.cql.CQLSortNode;
 import org.z3950.zing.cql.ModifierSet;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
 
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.core.Future.succeededFuture;
-import static java.lang.String.format;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.reverseOrder;
-import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
-import static org.folio.service.CustomFieldUtils.extractDefaultOptionIds;
-import static org.folio.service.CustomFieldUtils.extractOptionIds;
-import static org.folio.service.CustomFieldUtils.isSelectableCustomFieldType;
-import static org.folio.service.CustomFieldUtils.isTextBoxCustomFieldType;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 
 @Component
 public class CustomFieldsServiceImpl implements CustomFieldsService {
