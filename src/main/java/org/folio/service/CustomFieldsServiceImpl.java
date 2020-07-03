@@ -6,7 +6,6 @@ import static java.lang.String.format;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.reverseOrder;
-
 import static org.folio.db.DbUtils.executeInTransactionWithVertxFuture;
 import static org.folio.service.CustomFieldUtils.extractDefaultOptionIds;
 import static org.folio.service.CustomFieldUtils.extractOptionIds;
@@ -31,22 +30,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Sets;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.z3950.zing.cql.CQLDefaultNodeVisitor;
-import org.z3950.zing.cql.CQLNode;
-import org.z3950.zing.cql.CQLParseException;
-import org.z3950.zing.cql.CQLParser;
-import org.z3950.zing.cql.CQLSortNode;
-import org.z3950.zing.cql.ModifierSet;
-
 import org.folio.common.OkapiParams;
 import org.folio.model.RecordUpdate;
 import org.folio.repository.CustomFieldsRepository;
@@ -61,6 +46,21 @@ import org.folio.rest.persist.SQLConnection;
 import org.folio.rest.validate.Validation;
 import org.folio.service.exc.InvalidFieldValueException;
 import org.folio.service.exc.ServiceExceptions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.z3950.zing.cql.CQLDefaultNodeVisitor;
+import org.z3950.zing.cql.CQLNode;
+import org.z3950.zing.cql.CQLParseException;
+import org.z3950.zing.cql.CQLParser;
+import org.z3950.zing.cql.CQLSortNode;
+import org.z3950.zing.cql.ModifierSet;
+
+import com.google.common.collect.Sets;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 
 @Component
 public class CustomFieldsServiceImpl implements CustomFieldsService {
@@ -100,7 +100,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   @Override
   public Future<Void> update(String id, CustomField customField, OkapiParams params) {
     return findById(id, params.getTenant())
-      .compose(oldCustomField -> update(customField, oldCustomField, params, null));
+      .compose(oldCustomField -> {
+        customField.setId(oldCustomField.getId());
+        customField.setOrder(oldCustomField.getOrder());
+        return update(customField, oldCustomField, params, null);
+      });
   }
 
   @Override
@@ -130,9 +134,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     return repository.findByQuery(null, 0, Integer.MAX_VALUE, params.getTenant())
       .compose(existingFields -> {
         setOrder(customFields);
-        customFields.stream()
-          .filter(field -> StringUtils.isBlank(field.getId()))
-          .forEach(field -> field.setId(UUID.randomUUID().toString()));
+        setIdIfEmpty(customFields);
         Map<String, CustomField> newFieldsMap = createMapById(customFields);
         Map<String, CustomField> existingFieldsMap = createMapById(existingFields.getCustomFields());
 
@@ -156,6 +158,12 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         )
           .map(customFields);
       });
+  }
+
+  private void setIdIfEmpty(List<CustomField> customFields) {
+    customFields.stream()
+      .filter(field -> StringUtils.isBlank(field.getId()))
+      .forEach(field -> field.setId(UUID.randomUUID().toString()));
   }
 
   @Override
@@ -223,9 +231,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
   private Future<Void> update(CustomField customField, CustomField oldCustomField, OkapiParams params,
                               @Nullable AsyncResult<SQLConnection> connection) {
-    customField.setId(oldCustomField.getId());
     customField.setRefId(oldCustomField.getRefId());
-    customField.setOrder(oldCustomField.getOrder());
     setDefaultFormat(customField);
 
     RecordUpdate recordUpdate = createRecordUpdate(customField, oldCustomField);
