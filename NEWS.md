@@ -1,3 +1,9 @@
+## 1.4.1 2020-07-06
+* MODCFIELDS-57 - Incorrect order of Custom Fields when drag-n-drop fields
+* MODCFIELDS-55 - Incorrect order of Custom Fields when adding a 10th field
+* MODCFIELDS-42 - Custom Field: Text Field Format Validation
+* MODCFIELDS-46 - Custom Field Option: Provide an indication that an option has been saved to a record	
+
 ## 1.4.0
 * MODCFIELDS-37 Implement repeatable field support
 * MODCFIELDS-43 Add support of custom field option IDs
