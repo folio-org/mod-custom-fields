@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.common.OkapiParams;
 import org.folio.model.RecordUpdate;
@@ -381,10 +382,13 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
   }
 
   private String unAccentName(String customFieldName) {
-    return Normalizer.normalize(customFieldName, Normalizer.Form.NFD)
+    final String capitalizedString = WordUtils.capitalizeFully(customFieldName);
+    final String splitString = Normalizer.normalize(capitalizedString, Normalizer.Form.NFD)
       .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
       .replaceAll("[^a-zA-Z\\s]", "")
-      .replaceAll("\\s+", "-").toLowerCase();
+      .replaceAll("\\s+", "");
+
+    return StringUtils.uncapitalize(splitString);
   }
 
   private String getCustomFieldRefId(String id, Integer maxRefId) {
