@@ -71,7 +71,7 @@ public class CustomFieldsImplTest extends TestBase {
   public void postCustomFields() throws IOException, URISyntaxException {
     CustomField customField = createCustomField(readFile("fields/post/singleSelect/postValidSingleSelect.json"));
 
-    assertEquals("favoritefood1", customField.getRefId());
+    assertEquals("favoriteFood", customField.getRefId());
     assertThat(customField.getSelectField().getOptions().getValues(),
       hasItem(hasProperty("id", equalTo("opt_2")))
     );
@@ -100,16 +100,16 @@ public class CustomFieldsImplTest extends TestBase {
   public void shouldCreateTwoRefIdOnPostCustomFieldWithSameName() throws IOException, URISyntaxException {
     CustomField cfWithAccentName1 = createCustomField(readFile("fields/post/postCustomFieldWithAccentName.json"));
     CustomField cfWithAccentName2 = createCustomField(readFile("fields/post/postCustomFieldWithAccentNameSecond.json"));
-    assertEquals("thisIsATrickyString1", cfWithAccentName1.getRefId());
-    assertEquals("thisIsATrickyString2", cfWithAccentName2.getRefId());
+    assertEquals("thisIsATrickyString", cfWithAccentName1.getRefId());
+    assertEquals("thisIsATrickyString_2", cfWithAccentName2.getRefId());
   }
 
   @Test
   public void shouldCreateTwoRefIdOnPostCustomFieldWithSameName2() throws IOException, URISyntaxException {
     CustomField cfWithAccentName = createCustomField(readFile("fields/post/postCustomFieldWithAccentName.json"));
     CustomField cfWithHalfName = createCustomField(readFile("fields/post/postCustomFieldHalfName2.json"));
-    assertEquals("thisIsATrickyString1", cfWithAccentName.getRefId());
-    assertEquals("thisIsA1", cfWithHalfName.getRefId());
+    assertEquals("thisIsATrickyString", cfWithAccentName.getRefId());
+    assertEquals("thisIsA", cfWithHalfName.getRefId());
   }
 
   @Test
@@ -121,7 +121,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomFieldCollection fields = getWithOk(CUSTOM_FIELDS_PATH + "?limit=500&offset0").as(CustomFieldCollection.class);
     final List<CustomField> customFields = fields.getCustomFields();
-    for (int i = 0; i < customFields.size(); i++) {
+    for (int i = 1; i < customFields.size(); i++) {
       assertTrue(customFields.get(i).getRefId().contains(String.valueOf(i + 1)));
     }
   }
@@ -294,7 +294,7 @@ public class CustomFieldsImplTest extends TestBase {
     CustomField actual = getWithOk(itemResourcePath(customField.getId())).as(CustomField.class);
 
     assertEquals("Department", actual.getName());
-    assertEquals("department1", actual.getRefId());
+    assertEquals("department", actual.getRefId());
     assertEquals("Provide a department", actual.getHelpText());
     assertEquals(true, actual.getRequired());
     assertEquals(true, actual.getVisible());
@@ -330,7 +330,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomField actual = getAllCustomFields(vertx).get(0);
     assertEquals("favoriteFood 2", actual.getName());
-    assertEquals("favoritefood1", actual.getRefId());
+    assertEquals("favoritefood", actual.getRefId());
     assertEquals("Choose your favorite food", actual.getHelpText());
     assertEquals(true, actual.getRequired());
     assertEquals(true, actual.getVisible());
@@ -353,7 +353,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomField field = getAllCustomFields(vertx).get(0);
     assertEquals("Expiration Date", field.getName());
-    assertEquals("expirationDate1", field.getRefId());
+    assertEquals("expirationDate", field.getRefId());
     assertEquals("Set expiration date", field.getHelpText());
     assertEquals(true, field.getRequired());
     assertEquals(true, field.getVisible());
@@ -444,7 +444,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomField firstFieldUpdated = customFieldsAfterUpdate.get(0);
     assertEquals("New Expiration Date", firstFieldUpdated.getName());
-    assertEquals("newExpirationDate1", firstFieldUpdated.getRefId());
+    assertEquals("newExpirationDate", firstFieldUpdated.getRefId());
     assertEquals("Set new expiration date", firstFieldUpdated.getHelpText());
     assertEquals(true, firstFieldUpdated.getRequired());
     assertEquals(true, firstFieldUpdated.getVisible());
@@ -458,7 +458,7 @@ public class CustomFieldsImplTest extends TestBase {
 
     CustomField secondFieldUpdated = customFieldsAfterUpdate.get(1);
     assertEquals("Department 2", secondFieldUpdated.getName());
-    assertEquals("department1", secondFieldUpdated.getRefId());
+    assertEquals("department", secondFieldUpdated.getRefId());
     assertEquals("Provide a second department", secondFieldUpdated.getHelpText());
     assertEquals(false, secondFieldUpdated.getRequired());
     assertEquals(false, secondFieldUpdated.getVisible());
@@ -501,7 +501,7 @@ public class CustomFieldsImplTest extends TestBase {
     assertEquals(2, customFieldsAfterUpdate.size());
 
     assertEquals(1, (int) firstFieldUpdated.getOrder());
-    assertEquals("expirationDate2",  firstFieldUpdated.getRefId());
+    assertEquals("expirationDate_2",  firstFieldUpdated.getRefId());
 
     assertEquals(2, (int) secondFieldUpdated.getOrder());
     assertEquals(cfNameUpdated, secondFieldUpdated.getName());

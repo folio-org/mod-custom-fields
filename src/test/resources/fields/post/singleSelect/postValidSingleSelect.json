@@ -1,5 +1,5 @@
 {
-  "name": "favoriteFood",
+  "name": "Favorite Food",
   "visible": true,
   "required": true,
   "type": "SINGLE_SELECT_DROPDOWN",

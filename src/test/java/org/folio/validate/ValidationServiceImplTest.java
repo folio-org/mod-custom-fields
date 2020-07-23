@@ -51,7 +51,7 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnSuccessfulFutureIfValidationSucceeds(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood1\":\"opt_1\"}", CustomFieldValue.class);
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood\":\"opt_1\"}", CustomFieldValue.class);
     validationService
       .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .map(o -> {
@@ -68,7 +68,7 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnAnErrorIfValidationFails(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood1\":\"opt_5\"}", CustomFieldValue.class);
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood\":\"opt_5\"}", CustomFieldValue.class);
     validationService.validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .onComplete(validation -> {
         if (validation.failed()) {
@@ -78,7 +78,7 @@ public class ValidationServiceImplTest extends TestBase {
           } else {
             Errors errors = ((CustomFieldValidationException) cause).getErrors();
             Parameter errorParam = errors.getErrors().get(0).getParameters().get(0);
-            context.assertEquals("favoritefood1", errorParam.getKey());
+            context.assertEquals("favoritefood", errorParam.getKey());
             context.assertEquals("\"opt_5\"", errorParam.getValue());
           }
         } else {
