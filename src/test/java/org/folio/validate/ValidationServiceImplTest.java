@@ -1,7 +1,6 @@
 package org.folio.validate;
 
 import static org.apache.http.HttpStatus.SC_CREATED;
-
 import static org.folio.CustomFieldsTestUtil.CUSTOM_FIELDS_PATH;
 import static org.folio.CustomFieldsTestUtil.USER1_HEADER;
 import static org.folio.CustomFieldsTestUtil.mockUserRequests;
@@ -11,22 +10,22 @@ import static org.folio.test.util.TestUtil.readFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import io.vertx.core.Context;
-import io.vertx.core.json.Json;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.folio.CustomFieldsTestUtil;
+import org.folio.rest.jaxrs.model.Errors;
+import org.folio.rest.jaxrs.model.Parameter;
+import org.folio.spring.SpringContextUtil;
+import org.folio.test.util.TestBase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.CustomFieldsTestUtil;
-import org.folio.rest.jaxrs.model.Errors;
-import org.folio.rest.jaxrs.model.Parameter;
-import org.folio.spring.SpringContextUtil;
-import org.folio.test.util.TestBase;
+import io.vertx.core.Context;
+import io.vertx.core.json.Json;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class ValidationServiceImplTest extends TestBase {
@@ -52,7 +51,7 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnSuccessfulFutureIfValidationSucceeds(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"opt_1\"}", CustomFieldValue.class);
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood\":\"opt_1\"}", CustomFieldValue.class);
     validationService
       .validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .map(o -> {
@@ -69,7 +68,7 @@ public class ValidationServiceImplTest extends TestBase {
   public void shouldReturnAnErrorIfValidationFails(TestContext context) throws IOException, URISyntaxException {
     createRadioButtonField();
     Async async = context.async();
-    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood_1\":\"opt_5\"}", CustomFieldValue.class);
+    CustomFieldValue customFieldValue = Json.decodeValue("{\"favoritefood\":\"opt_5\"}", CustomFieldValue.class);
     validationService.validateCustomFields(customFieldValue.getAdditionalProperties(), STUB_TENANT)
       .onComplete(validation -> {
         if (validation.failed()) {
@@ -79,7 +78,7 @@ public class ValidationServiceImplTest extends TestBase {
           } else {
             Errors errors = ((CustomFieldValidationException) cause).getErrors();
             Parameter errorParam = errors.getErrors().get(0).getParameters().get(0);
-            context.assertEquals("favoritefood_1", errorParam.getKey());
+            context.assertEquals("favoritefood", errorParam.getKey());
             context.assertEquals("\"opt_5\"", errorParam.getValue());
           }
         } else {

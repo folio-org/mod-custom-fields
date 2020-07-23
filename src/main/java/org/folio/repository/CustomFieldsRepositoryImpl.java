@@ -163,8 +163,13 @@ public class CustomFieldsRepositoryImpl implements CustomFieldsRepository {
   }
 
   private Integer mapMaxRefId(RowSet<Row> rowSet) {
+    if (rowSet.rowCount() == 1 && !RowSetUtils.mapFirstItem(rowSet, row -> row.getString(VALUES_COLUMN)).contains("_")) {
+      return 1;
+    }
     return RowSetUtils.streamOf(rowSet)
       .map(row -> row.getString(VALUES_COLUMN))
+      .map(s -> StringUtils.substringAfter(s, "_"))
+      .filter(StringUtils::isNotBlank)
       .mapToInt(Integer::parseInt)
       .max().orElse(0);
   }
